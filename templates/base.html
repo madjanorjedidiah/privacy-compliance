@@ -29,6 +29,13 @@
   </script>
 </head>
 <body class="antialiased">
+  {% if BRAND.PRIVATE_BETA %}
+  <div class="bg-amber-500 text-amber-950 text-center text-xs font-semibold py-1.5 px-3 border-b border-amber-600">
+    🚧 Private beta — this instance is for internal use and demonstration only.
+    Do not upload the personal data of real individuals until the operating
+    entity has completed its Data Protection Commission registration.
+  </div>
+  {% endif %}
   {% block body %}
   <div class="shell-grid">
     {% include 'partials/sidebar.html' %}

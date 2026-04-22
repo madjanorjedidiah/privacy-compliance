@@ -38,6 +38,7 @@ env = environ.Env(
     DJANGO_SUPERUSER_USERNAME=(str, ''),
     DJANGO_SUPERUSER_EMAIL=(str, ''),
     DJANGO_SUPERUSER_PASSWORD=(str, ''),
+    APP_PRIVATE_BETA=(bool, True),
 )
 
 _env_file = BASE_DIR / '.env'
@@ -362,6 +363,7 @@ BRAND = {
     'BRAND_TAGLINE': 'Continuous Data Protection Compliance',
     'PRIMARY_DOMAIN': 'mydataprotection.cocoatool.org',
     'SUPPORT_EMAIL': 'privacy@cocoatool.org',
+    'PRIVATE_BETA': env('APP_PRIVATE_BETA'),
     'LEGAL_DISCLAIMER': (
         'This platform provides compliance management tooling. Content is '
         'informational and not legal advice; consult qualified counsel for '
