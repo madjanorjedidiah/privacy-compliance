@@ -1,52 +1,69 @@
 {% extends 'base.html' %}
-{% block title %}Templates{% endblock %}
+{% block title %}Templates by jurisdiction{% endblock %}
 {% block topbar_eyebrow %}Library{% endblock %}
-{% block topbar_title %}Policy & notice templates{% endblock %}
+{% block topbar_title %}Templates by jurisdiction{% endblock %}
+{% block topbar_actions %}<a href="{% url 'compliance:home' %}" class="btn btn-outline">← Back to compliance</a>{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-  <div>
-    <h3 class="text-sm uppercase tracking-widest text-slate-500 mb-3">Catalog</h3>
-    <div class="space-y-3">
-      {% for t in templates %}
-        <div class="card p-4 flex items-start justify-between gap-4">
-          <div class="min-w-0">
-            <p class="font-semibold text-slate-900">{{ t.name }}</p>
-            <p class="text-xs text-slate-500 mt-0.5">{{ t.description }}</p>
-            <div class="flex items-center gap-2 mt-2">
-              <span class="badge badge-muted">{{ t.get_kind_display }}</span>
-              {% if t.jurisdiction_code %}<span class="badge badge-info">{{ t.jurisdiction_code }}</span>{% else %}<span class="badge badge-muted">Universal</span>{% endif %}
-            </div>
-          </div>
-          <div class="flex flex-col gap-2 shrink-0">
-            <a href="{% url 'templates:preview' t.pk %}" class="btn btn-outline">Preview</a>
-            <form method="post" action="{% url 'templates:generate' t.pk %}">
-              {% csrf_token %}
-              <button class="btn btn-primary w-full">Generate</button>
-            </form>
-          </div>
-        </div>
-      {% empty %}
-        <p class="text-slate-500 text-sm">No templates seeded yet. Run <code>python manage.py seed_templates</code>.</p>
-      {% endfor %}
-    </div>
-  </div>
+<p class="text-sm text-slate-500 mb-4 max-w-3xl">Pick a jurisdiction and generate a starter policy or notice pre-filled with your organisation data. Every template shows which compliance requirement it helps satisfy.</p>
 
-  <div>
-    <h3 class="text-sm uppercase tracking-widest text-slate-500 mb-3">Your generated documents</h3>
-    <div class="space-y-3">
-      {% for d in documents %}
-        <a href="{% url 'templates:document' d.pk %}" class="card p-4 flex items-start justify-between hover:border-brand-500">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+  {% for card in jurisdiction_cards %}
+    <div class="card p-6">
+      {% if card.is_universal %}
+        <h3 class="text-lg font-semibold flex items-center gap-2">🌐 Universal</h3>
+        <p class="text-xs text-slate-500 mt-1">Not tied to a single regime.</p>
+      {% else %}
+        <div class="flex items-start justify-between">
           <div>
-            <p class="font-semibold">{{ d.title }}</p>
-            <p class="text-xs text-slate-500">{{ d.template.get_kind_display }} · {{ d.created_at|date:"d M Y H:i" }}</p>
+            <p class="text-3xl">{{ card.jurisdiction.flag_emoji }}</p>
+            <h3 class="text-lg font-semibold mt-1">{{ card.jurisdiction.name }}</h3>
+            <p class="text-xs text-slate-500">{{ card.jurisdiction.authority }}</p>
           </div>
-          <span class="text-brand-700 font-semibold text-sm">Open →</span>
-        </a>
-      {% empty %}
-        <p class="text-slate-500 text-sm">No generated documents yet — pick a template and click Generate.</p>
-      {% endfor %}
+          <span class="badge badge-muted">{{ card.templates|length }} template{{ card.templates|length|pluralize }}</span>
+        </div>
+      {% endif %}
+
+      <ul class="mt-4 space-y-4">
+        {% for t in card.templates %}
+          <li class="border-t first:border-t-0 pt-4 first:pt-0 border-slate-100">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <p class="font-semibold text-slate-900">{{ t.name }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ t.description }}</p>
+                <div class="flex items-center gap-1 mt-2 flex-wrap">
+                  <span class="badge badge-info">{{ t.get_kind_display }}</span>
+                  {% for req in t.requirements.all %}
+                    <span class="badge badge-muted" title="Satisfies {{ req.title }}">{{ req.code }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="shrink-0 flex flex-col gap-2">
+                <a href="{% url 'templates:preview' t.pk %}{% if not card.is_universal %}?jurisdiction={{ card.jurisdiction.code }}{% endif %}" class="btn btn-outline !py-1.5 !px-3 !text-xs">Preview</a>
+                <form method="post" action="{% url 'templates:generate' t.pk %}">
+                  {% csrf_token %}
+                  {% if not card.is_universal %}<input type="hidden" name="jurisdiction" value="{{ card.jurisdiction.code }}"/>{% endif %}
+                  <button class="btn btn-primary !py-1.5 !px-3 !text-xs w-full">Generate →</button>
+                </form>
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
     </div>
-  </div>
+  {% endfor %}
+</div>
+
+<h3 class="text-sm uppercase tracking-widest text-slate-500 mb-3 mt-8">Your generated documents</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {% for d in documents %}
+    <a href="{% url 'templates:document' d.pk %}" class="card p-4 hover:border-brand-500">
+      <p class="font-semibold truncate">{{ d.title }}</p>
+      <p class="text-xs text-slate-500 mt-0.5">{{ d.template.get_kind_display }} · {{ d.created_at|date:"d M Y H:i" }}</p>
+      <p class="text-xs text-brand-700 mt-2">Open →</p>
+    </a>
+  {% empty %}
+    <p class="text-slate-500 text-sm">No generated documents yet — pick a template above and click Generate.</p>
+  {% endfor %}
 </div>
 {% endblock %}

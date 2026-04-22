@@ -22,6 +22,10 @@ class TemplateDefinition(TimeStampedModel):
     description = models.TextField(blank=True)
     body = models.TextField(help_text='Django-template string. Context = {org, profile, jurisdiction, frameworks, today}.')
     version = models.PositiveSmallIntegerField(default=1)
+    requirements = models.ManyToManyField(
+        'jurisdictions.Requirement', blank=True, related_name='templates',
+        help_text='Requirements this template helps satisfy.',
+    )
 
     class Meta:
         ordering = ['kind', 'jurisdiction_code']

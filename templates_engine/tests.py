@@ -42,3 +42,13 @@ class TemplateEngineTests(TestCase):
         doc = generate_document(tmpl, org, jurisdiction_code='NG')
         self.assertEqual(doc.organization, org)
         self.assertIn('Acme Ltd', doc.rendered_content)
+
+    def test_templates_are_linked_to_requirements(self):
+        tmpl = TemplateDefinition.objects.get(kind='privacy_notice', jurisdiction_code='EU')
+        codes = list(tmpl.requirements.values_list('code', flat=True))
+        self.assertIn('GDPR-Art-12', codes)
+
+    def test_universal_template_links_across_jurisdictions(self):
+        ropa = TemplateDefinition.objects.get(kind='ropa', jurisdiction_code='')
+        codes = set(ropa.requirements.values_list('code', flat=True))
+        self.assertTrue({'GDPR-Art-30', 'NG-ROPA'} <= codes)

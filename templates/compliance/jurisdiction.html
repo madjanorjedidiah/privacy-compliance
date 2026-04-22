@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}{{ jurisdiction.name }} — Compliance{% endblock %}
+{% block topbar_eyebrow %}Compliance · {{ jurisdiction.flag_emoji }} {{ jurisdiction.name }}{% endblock %}
+{% block topbar_title %}{{ jurisdiction.name }} — policies & controls{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'compliance:home' %}" class="btn btn-outline">← All jurisdictions</a>
+{% endblock %}
+
+{% block content %}
+<div class="card p-6 mb-6">
+  <div class="flex items-center gap-6 flex-wrap">
+    {% include 'compliance/_score_ring.html' with score=score size=110 %}
+    <div class="flex-1 min-w-0">
+      <h2 class="text-xl font-semibold">{{ jurisdiction.flag_emoji }} {{ jurisdiction.name }}</h2>
+      <p class="text-sm text-slate-500">{{ jurisdiction.authority }}</p>
+      <div class="mt-3 flex items-center gap-2 flex-wrap">
+        <span class="badge badge-ok">✅ {{ done }} of {{ total }} implemented</span>
+        <span class="badge badge-muted">Severity-weighted score</span>
+      </div>
+    </div>
+  </div>
+  <p class="text-xs text-slate-500 mt-4">Tick each policy below as you implement it. Use the "Use template" button where available to kickstart a draft pre-filled with your organisation data.</p>
+</div>
+
+{% for group in grouped %}
+<section class="card mb-5 overflow-hidden" x-data="{open: true}">
+  <button type="button" @click="open = !open" class="w-full flex items-center justify-between px-5 py-3 bg-slate-50 hover:bg-slate-100 text-left">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex w-8 h-8 items-center justify-center rounded-md bg-white border text-brand-700 font-bold">{{ group.items|length }}</span>
+      <span class="font-semibold">{{ group.label }}</span>
+    </div>
+    <span class="text-slate-400 text-sm" x-text="open ? '−' : '+'">−</span>
+  </button>
+  <div x-show="open" x-transition class="divide-y divide-slate-100">
+    {% for item in group.items %}
+      <article class="px-5 py-4">
+        <div class="flex items-start justify-between gap-5 flex-wrap md:flex-nowrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="badge badge-info">{{ item.req.framework.short_name }} · {{ item.req.code }}</span>
+              {% if item.req.severity_weight >= 4 %}
+                <span class="badge badge-danger">Severity {{ item.req.severity_weight }}/5</span>
+              {% elif item.req.severity_weight >= 3 %}
+                <span class="badge badge-warn">Severity {{ item.req.severity_weight }}/5</span>
+              {% else %}
+                <span class="badge badge-muted">Severity {{ item.req.severity_weight }}/5</span>
+              {% endif %}
+              {% if item.status == 'implemented' or item.status == 'verified' %}
+                <span class="badge badge-ok">● Implemented</span>
+              {% elif item.status == 'in_progress' %}
+                <span class="badge badge-warn">● In progress</span>
+              {% elif item.status == 'not_applicable' %}
+                <span class="badge badge-muted">N/A</span>
+              {% else %}
+                <span class="badge badge-danger">● Not started</span>
+              {% endif %}
+            </div>
+            <h4 class="mt-2 font-semibold text-slate-900">{{ item.req.title }}</h4>
+            <p class="text-sm text-slate-500 mt-0.5">{{ item.req.summary }}</p>
+            {% if item.req.guidance %}
+              <details class="mt-2 text-sm text-slate-600">
+                <summary class="cursor-pointer text-brand-700 font-semibold text-xs uppercase tracking-widest">How to implement</summary>
+                <p class="mt-1">{{ item.req.guidance|linebreaksbr }}</p>
+                {% if item.req.typical_evidence %}
+                  <p class="mt-2 text-xs"><strong>Typical evidence:</strong> {{ item.req.typical_evidence }}</p>
+                {% endif %}
+              </details>
+            {% endif %}
+          </div>
+          <div class="shrink-0 w-full md:w-80">
+            {% if item.control %}
+            <form method="post" action="{% url 'compliance:advance' control_id=item.control.pk %}" class="flex items-center gap-2">
+              {% csrf_token %}
+              <div class="inline-flex rounded-md shadow-sm border overflow-hidden text-xs font-semibold bg-white">
+                <button type="submit" name="to" value="not_started"
+                        class="px-3 py-1.5 {% if item.status == 'not_started' %}bg-rose-600 text-white{% else %}text-rose-700 hover:bg-rose-50{% endif %}">Not started</button>
+                <button type="submit" name="to" value="in_progress"
+                        class="px-3 py-1.5 border-l {% if item.status == 'in_progress' %}bg-amber-500 text-white{% else %}text-amber-700 hover:bg-amber-50{% endif %}">In progress</button>
+                <button type="submit" name="to" value="implemented"
+                        class="px-3 py-1.5 border-l {% if item.status == 'implemented' or item.status == 'verified' %}bg-emerald-600 text-white{% else %}text-emerald-700 hover:bg-emerald-50{% endif %}">Implemented</button>
+              </div>
+            </form>
+            {% endif %}
+            <div class="flex flex-wrap gap-2 mt-3">
+              {% if item.templates %}
+                {% for t in item.templates %}
+                  <form method="post" action="{% url 'templates:generate' t.pk %}" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="jurisdiction" value="{{ jurisdiction.code }}"/>
+                    <button class="btn btn-primary !py-1 !px-2 !text-xs" title="Generate {{ t.name }} pre-filled with your org profile">📝 Use template</button>
+                  </form>
+                {% endfor %}
+              {% endif %}
+              {% if item.control %}
+                <a class="btn btn-outline !py-1 !px-2 !text-xs" href="{% url 'controls:detail' item.control.pk %}">Evidence →</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% empty %}
+<div class="card p-8 text-center">
+  <p class="text-sm text-slate-500">No applicable requirements for this jurisdiction.</p>
+</div>
+{% endfor %}
+{% endblock %}

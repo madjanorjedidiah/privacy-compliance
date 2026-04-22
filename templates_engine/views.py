@@ -12,10 +12,38 @@ def templates_list(request):
     org = request.active_org
     if not org:
         return redirect('accounts:signup')
-    templates = TemplateDefinition.objects.all()
+
+    from jurisdictions.models import Jurisdiction
+    jurisdictions = list(Jurisdiction.objects.prefetch_related('frameworks').all())
+
+    templates = (
+        TemplateDefinition.objects
+        .prefetch_related('requirements__framework__jurisdiction')
+    )
+
+    buckets = {j.code: {'jurisdiction': j, 'templates': []} for j in jurisdictions}
+    universal = []
+    for t in templates:
+        juris_codes = set()
+        if t.jurisdiction_code:
+            juris_codes.add(t.jurisdiction_code)
+        for req in t.requirements.all():
+            juris_codes.add(req.framework.jurisdiction.code)
+        if juris_codes:
+            for code in juris_codes:
+                if code in buckets:
+                    buckets[code]['templates'].append(t)
+        else:
+            universal.append(t)
+
+    jurisdiction_cards = [
+        v for v in buckets.values() if v['templates']
+    ] + ([{'jurisdiction': None, 'templates': universal, 'is_universal': True}] if universal else [])
+
     documents = GeneratedDocument.objects.filter(organization=org)
     return render(request, 'templates_engine/list.html', {
-        'templates': templates, 'documents': documents,
+        'jurisdiction_cards': jurisdiction_cards,
+        'documents': documents,
     })
 
 

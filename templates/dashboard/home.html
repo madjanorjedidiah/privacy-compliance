@@ -4,16 +4,17 @@
 {% block topbar_title %}Command Center{% endblock %}
 {% block topbar_actions %}
   <a href="{% url 'dashboard:gap_map' %}" class="btn btn-outline">🗺️ Gap Map</a>
-  <a href="{% url 'templates:list' %}" class="btn btn-primary">Generate template</a>
+  <a href="{% url 'compliance:home' %}" class="btn btn-primary">✅ Compliance Checks</a>
 {% endblock %}
 
 {% block content %}
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-  <div class="card kpi">
-    <span class="label">Maturity score</span>
-    <span class="value">{{ kpis.maturity }}<span class="text-lg text-slate-400 font-medium">/100</span></span>
+  <a href="{% url 'compliance:home' %}" class="card kpi hover:border-brand-500 transition">
+    <span class="label">Compliance score</span>
+    <span class="value {% if kpis.maturity >= 80 %}text-emerald-600{% elif kpis.maturity >= 50 %}text-amber-600{% else %}text-rose-600{% endif %}">{{ kpis.maturity }}<span class="text-lg text-slate-400 font-medium">/100</span></span>
     <div class="progress mt-2"><span style="width: {{ kpis.maturity }}%"></span></div>
-  </div>
+    <span class="hint">{{ kpis.weighted_done }} of {{ kpis.weighted_total }} policies implemented</span>
+  </a>
   <div class="card kpi">
     <span class="label">Open controls</span>
     <span class="value">{{ kpis.open_controls }}</span>

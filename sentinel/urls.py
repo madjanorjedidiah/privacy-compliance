@@ -11,6 +11,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('onboarding/', include('accounts.onboarding_urls', namespace='onboarding')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
+    path('compliance/', include('controls.compliance_urls', namespace='compliance')),
     path('controls/', include('controls.urls', namespace='controls')),
     path('risks/', include('risks.urls', namespace='risks')),
     path('templates/', include('templates_engine.urls', namespace='templates')),

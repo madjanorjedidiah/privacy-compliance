@@ -28,10 +28,17 @@ class DashboardServiceTests(TestCase):
 
     def test_kpi_snapshot_shape(self):
         kpis = kpi_snapshot(self.org)
-        for key in ('maturity', 'total_controls', 'open_controls', 'overdue_controls',
+        for key in ('maturity', 'weighted_done', 'weighted_total',
+                    'total_controls', 'open_controls', 'overdue_controls',
                     'total_risks', 'critical_risks', 'open_dsars', 'open_incidents'):
             self.assertIn(key, kpis)
         self.assertGreater(kpis['total_controls'], 0)
+
+    def test_kpi_snapshot_weighted_score_is_zero_on_fresh_workspace(self):
+        kpis = kpi_snapshot(self.org)
+        self.assertEqual(kpis['maturity'], 0)
+        self.assertEqual(kpis['weighted_done'], 0)
+        self.assertGreater(kpis['weighted_total'], 0)
 
     def test_maturity_per_framework_present(self):
         rows = maturity_per_framework(self.org)
@@ -44,6 +51,18 @@ class DashboardServiceTests(TestCase):
         data = gap_map(self.org)
         self.assertTrue(data['grid'])
         self.assertTrue(data['categories'])
+
+    def test_weighted_score_rises_as_controls_implemented(self):
+        from controls.models import Control
+        from core.choices import ControlStatus
+        before = kpi_snapshot(self.org)['maturity']
+        self.assertEqual(before, 0)
+        # Implement the highest-severity controls
+        for c in Control.objects.filter(organization=self.org).order_by('-requirement__severity_weight')[:5]:
+            c.status = ControlStatus.IMPLEMENTED
+            c.save()
+        after = kpi_snapshot(self.org)['maturity']
+        self.assertGreater(after, before)
 
 
 class DashboardViewTests(TestCase):
@@ -91,3 +110,29 @@ class DashboardViewTests(TestCase):
     def test_jurisdictions_list_renders(self):
         resp = self.client.get(reverse('jurisdictions:list'))
         self.assertEqual(resp.status_code, 200)
+
+    def test_compliance_home_renders(self):
+        resp = self.client.get(reverse('compliance:home'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Compliance Checks')
+
+    def test_compliance_jurisdiction_renders(self):
+        resp = self.client.get(reverse('compliance:jurisdiction', kwargs={'code': 'KE'}))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_compliance_advance_cycles_status(self):
+        from controls.models import Control
+        from core.choices import ControlStatus
+        control = Control.objects.filter(organization=self.org).first()
+        self.assertEqual(control.status, ControlStatus.NOT_STARTED)
+
+        resp = self.client.post(reverse('compliance:advance', kwargs={'control_id': control.pk}), data={'to': 'in_progress'})
+        self.assertEqual(resp.status_code, 302)
+        control.refresh_from_db()
+        self.assertEqual(control.status, ControlStatus.IN_PROGRESS)
+
+        resp = self.client.post(reverse('compliance:advance', kwargs={'control_id': control.pk}), data={'to': 'implemented'})
+        self.assertEqual(resp.status_code, 302)
+        control.refresh_from_db()
+        self.assertEqual(control.status, ControlStatus.IMPLEMENTED)
+        self.assertIsNotNone(control.completed_at)

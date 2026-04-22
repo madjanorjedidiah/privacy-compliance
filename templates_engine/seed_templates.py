@@ -11,6 +11,7 @@ TEMPLATES = [
         'kind': 'privacy_notice', 'jurisdiction_code': 'EU',
         'name': 'Privacy Notice — GDPR (EU/EEA)',
         'description': 'GDPR-compliant privacy notice covering Arts. 12–14 disclosures.',
+        'requirements': ['GDPR-Art-12'],
         'body': """# Privacy Notice
 
 **{{ org.name }}** ("we", "us") is committed to protecting your personal data. This notice explains how we process your personal data in compliance with the **General Data Protection Regulation (Regulation (EU) 2016/679)**.
@@ -57,6 +58,7 @@ _This notice does not constitute legal advice. Review with qualified counsel bef
         'kind': 'privacy_notice', 'jurisdiction_code': 'GH',
         'name': 'Privacy Notice — Ghana Data Protection Act',
         'description': 'Ghana DPA 2012 privacy notice.',
+        'requirements': ['GH-Notice'],
         'body': """# Privacy Notice (Ghana)
 
 **{{ org.name }}** is registered (or will register) as a data controller with the **Data Protection Commission of Ghana** under the **Data Protection Act, 2012 (Act 843)**.
@@ -97,6 +99,7 @@ _This notice does not constitute legal advice._
         'kind': 'privacy_notice', 'jurisdiction_code': 'KE',
         'name': 'Privacy Notice — Kenya Data Protection Act',
         'description': 'Kenya DPA 2019 privacy notice.',
+        'requirements': ['KE-Notice'],
         'body': """# Privacy Notice (Kenya)
 
 This notice describes how **{{ org.name }}** ("we") processes personal data under the **Data Protection Act, 2019** (Act No. 24 of 2019).
@@ -133,6 +136,7 @@ _This notice does not constitute legal advice._
         'kind': 'privacy_notice', 'jurisdiction_code': 'NG',
         'name': 'Privacy Notice — Nigeria Data Protection Act',
         'description': 'NDPA 2023 privacy notice.',
+        'requirements': ['NG-Notice'],
         'body': """# Privacy Notice (Nigeria)
 
 **{{ org.name }}** processes personal data in accordance with the **Nigeria Data Protection Act, 2023 (NDPA)**.
@@ -169,6 +173,7 @@ _This notice does not constitute legal advice._
         'kind': 'privacy_notice', 'jurisdiction_code': 'US',
         'name': 'Privacy Notice — California (CCPA/CPRA)',
         'description': 'CCPA/CPRA California-specific notice.',
+        'requirements': ['CCPA-Notice'],
         'body': """# California Privacy Notice
 
 This California-specific notice supplements our main privacy policy for California residents whose information we collect, in compliance with the **California Consumer Privacy Act (CCPA)**, as amended by the **CPRA**.
@@ -219,6 +224,7 @@ _This notice does not constitute legal advice._
         'kind': 'ropa', 'jurisdiction_code': '',
         'name': 'Record of Processing Activities (ROPA)',
         'description': 'Template aligned with GDPR Art. 30, NDPA §29, Kenya DPA, Ghana DPA.',
+        'requirements': ['GDPR-Art-30', 'NG-ROPA', 'KE-Principles', 'GH-Principles'],
         'body': """# Record of Processing Activities (ROPA)
 
 **Controller:** {{ org.name }}{% if org.country %} • **Country:** {{ org.country }}{% endif %}
@@ -248,6 +254,7 @@ _Keep this ROPA current — update on every new processing activity. Regulators 
         'kind': 'dsar_response', 'jurisdiction_code': '',
         'name': 'Data Subject Access Request Response',
         'description': 'DSAR response template covering GDPR/NDPA/Kenya/Ghana/CCPA.',
+        'requirements': ['GDPR-Art-15', 'NG-Rights', 'KE-Rights', 'GH-Rights', 'CCPA-Rights'],
         'body': """[Date: {{ today|date:"F j, Y" }}]
 
 Dear [Data subject name],
@@ -281,6 +288,163 @@ Yours sincerely,
 
 ---
 _This response template is provided as a compliance aid and does not constitute legal advice._
+""",
+    },
+
+    # --- Cookie / tracker policy --------------------------------------------
+    {
+        'kind': 'cookie_policy', 'jurisdiction_code': '',
+        'name': 'Cookie & Tracker Policy',
+        'description': 'Cookie disclosure covering strictly necessary, analytics, and marketing categories.',
+        'requirements': ['GDPR-Art-12', 'GH-Notice', 'KE-Notice', 'NG-Notice', 'CCPA-Notice'],
+        'body': """# Cookie & Tracker Policy
+
+**{{ org.name }}** uses cookies and similar tracking technologies on our website and applications. This policy explains what we use them for and how you can control them.
+
+_Last updated: {{ today|date:"F j, Y" }}_
+
+## 1. What are cookies?
+Cookies are small text files placed on your device. Similar technologies include local storage, pixels, SDKs, and fingerprinting tools. We refer to all of them as "cookies" below.
+
+## 2. Categories of cookies we use
+
+| Category | Purpose | Lifetime | Can you disable? |
+|---|---|---|---|
+| Strictly necessary | Session, authentication, security | Session | No |
+| Preferences | Language, UI state | 1 year | Yes |
+| Analytics | Aggregate usage measurement | 13 months | Yes |
+| Marketing | Audience targeting and measurement | 13 months | Yes (opt-in required) |
+
+## 3. Your choices
+- **Consent banner** — on your first visit you can accept or reject non-essential cookies.
+- **Preferences centre** — change your choices any time at [link to preferences].
+- **Browser controls** — you can block or delete cookies at browser level.
+- **Global Privacy Control (GPC)** — we honour GPC signals as an opt-out of sale/share for California residents.
+
+## 4. Third-party cookies
+Some cookies are set by providers we integrate with (e.g. analytics, embedded content). A full vendor list is available at [vendor list URL].
+
+## 5. Changes to this policy
+We review this policy at least annually.
+
+## 6. Contact
+Questions: **[privacy contact email]**.
+
+---
+_This policy is informational and does not constitute legal advice._
+""",
+    },
+
+    # --- DPIA template ------------------------------------------------------
+    {
+        'kind': 'dpia', 'jurisdiction_code': '',
+        'name': 'Data Protection Impact Assessment (DPIA)',
+        'description': 'DPIA template structured around GDPR Art. 35 and equivalent Kenya / Nigeria requirements.',
+        'requirements': ['GDPR-Art-35', 'KE-DPIA'],
+        'body': """# Data Protection Impact Assessment
+
+**Organisation:** {{ org.name }}
+**Assessment date:** {{ today|date:"F j, Y" }}
+**Prepared by:** [Name, role]
+**Reviewed by:** [DPO / Privacy lead]
+
+## 1. Describe the processing
+- **Activity:** [Name of processing activity]
+- **Purpose:** [Primary and secondary purposes]
+- **Legal basis:** [Art. 6 basis; Art. 9 condition if special category]
+- **Data categories:** {% if profile %}{{ profile.data_categories|join:", " }}{% else %}[List]{% endif %}
+- **Data subjects:** [Employees / customers / children / vulnerable]
+- **Volume:** [Estimated number of subjects / records]
+- **Retention:** [How long]
+- **Recipients and transfers:** [Including any cross-border]
+
+## 2. Necessity and proportionality
+- Lawful basis justification
+- Less-intrusive alternatives considered
+- Data minimisation measures applied
+- Transparency measures (notice, signage)
+
+## 3. Consultation
+- Internal stakeholders: [teams, dates]
+- External stakeholders / data subjects: [how/when]
+- DPO opinion: [summary + date]
+
+## 4. Risk assessment
+
+| # | Risk | Likelihood (1-5) | Impact (1-5) | Inherent score | Mitigation | Residual score |
+|---|---|---|---|---|---|---|
+| 1 | [e.g. unauthorised disclosure of financial data] | | | | | |
+| 2 | | | | | | |
+
+## 5. Mitigations
+- Technical: encryption, access control, logging
+- Organisational: training, contracts, oversight
+- Contractual: DPAs, flow-down clauses
+
+## 6. Residual risk and decision
+
+- **Residual risk level:** [Low / Moderate / High]
+- **Decision:** [Proceed / Proceed with conditions / Consult regulator / Do not proceed]
+
+## 7. Sign-off
+- **DPO:** [Name, date]
+- **Business owner:** [Name, date]
+- **Next review:** [Date]
+
+---
+_This DPIA template is provided as a compliance aid and does not constitute legal advice._
+""",
+    },
+
+    # --- Regulator breach notification --------------------------------------
+    {
+        'kind': 'breach_notification', 'jurisdiction_code': '',
+        'name': 'Regulator Breach Notification Letter',
+        'description': 'Letter template for notifying the supervisory authority within 72 hours.',
+        'requirements': ['GDPR-Art-33', 'KE-Breach', 'NG-Breach'],
+        'body': """[On organisation letterhead]
+
+[Recipient: Supervisory authority — e.g. Office of the Data Protection Commissioner / NDPC / Data Protection Commission / EU lead supervisory authority]
+
+**Subject:** Notification of Personal Data Breach — {{ org.name }}
+**Reference:** [Internal case ID]
+**Date:** {{ today|date:"F j, Y" }}
+
+Dear Sir / Madam,
+
+This notification is made under applicable data protection law (GDPR Art. 33 / Kenya DPA §43 / NDPA §40 / equivalent) within 72 hours of becoming aware of a personal data breach affecting data subjects for which {{ org.name }} is the controller.
+
+### 1. Nature of the breach
+- **Date/time of occurrence:** [ ]
+- **Date/time of detection:** [ ]
+- **Type of breach:** [Confidentiality / Integrity / Availability]
+- **Categories of data affected:** [ ]
+- **Approximate number of data subjects:** [ ]
+- **Approximate number of records:** [ ]
+
+### 2. Likely consequences
+[Describe harm assessment: identity theft, discrimination, financial loss, reputational damage, etc.]
+
+### 3. Measures taken or proposed
+- Containment: [ ]
+- Eradication: [ ]
+- Recovery: [ ]
+- Communication to affected individuals: [Planned / completed / not required because …]
+
+### 4. Contact details
+- **Data Protection Officer:** [Name, email, phone]
+- **Alternative contact:** [Name, role, email]
+
+We will supplement this notification with further information as the investigation progresses.
+
+Yours faithfully,
+
+[Name]
+[Title]
+{{ org.name }}
+
+---
+_This template is provided as a compliance aid and does not constitute legal advice._
 """,
     },
 ]

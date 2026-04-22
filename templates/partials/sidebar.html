@@ -16,13 +16,14 @@
 
     <nav class="space-y-1">
       <a href="{% url 'dashboard:home' %}"           class="{% if '/dashboard/' in request.path and 'gap' not in request.path %}active{% endif %}">📊 Command Center</a>
+      <a href="{% url 'compliance:home' %}"          class="{% if '/compliance/' in request.path %}active{% endif %}">✅ Compliance Checks</a>
+      <a href="{% url 'templates:list' %}"           class="{% if '/templates/' in request.path %}active{% endif %}">📝 Templates</a>
       <a href="{% url 'dashboard:gap_map' %}"        class="{% if 'gap-map' in request.path %}active{% endif %}">🗺️ Gap Map</a>
-      <a href="{% url 'controls:list' %}"            class="{% if '/controls/' in request.path %}active{% endif %}">✅ Controls</a>
       <a href="{% url 'risks:list' %}"               class="{% if '/risks/' in request.path %}active{% endif %}">⚠️ Risks</a>
       <a href="{% url 'dsar:list' %}"                class="{% if '/dsar/' in request.path %}active{% endif %}">📬 DSARs</a>
       <a href="{% url 'incidents:list' %}"           class="{% if '/incidents/' in request.path %}active{% endif %}">🚨 Incidents</a>
-      <a href="{% url 'templates:list' %}"           class="{% if '/templates/' in request.path %}active{% endif %}">📝 Templates</a>
-      <a href="{% url 'jurisdictions:list' %}"       class="{% if '/jurisdictions/' in request.path %}active{% endif %}">🌍 Jurisdictions</a>
+      <a href="{% url 'controls:list' %}"            class="{% if '/controls/' in request.path %}active text-xs{% endif %} text-slate-400">📋 Controls (table view)</a>
+      <a href="{% url 'jurisdictions:list' %}"       class="{% if '/jurisdictions/' in request.path %}active{% endif %}">🌍 Jurisdictions catalog</a>
     </nav>
 
     <div class="mt-auto px-2 py-3 text-[11px] text-slate-400">
