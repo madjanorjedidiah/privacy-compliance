@@ -16,7 +16,7 @@ class DashboardServiceTests(TestCase):
         call_command('seed_jurisdictions')
 
     def setUp(self):
-        self.org = Organization.objects.create(name='Kudu', country='KE', revenue_band='1-10M')
+        self.org = Organization.objects.create(name='Example Co', country='KE', revenue_band='1-10M')
         OrgProfile.objects.create(
             organization=self.org,
             data_subject_locations=['KE', 'NG'],
@@ -73,7 +73,7 @@ class DashboardViewTests(TestCase):
     def setUp(self):
         User = get_user_model()
         self.user = User.objects.create_user(username='jane', password='password-xyz-8', display_name='Jane')
-        self.org = Organization.objects.create(name='Kudu', country='KE', onboarded_at=timezone.now())
+        self.org = Organization.objects.create(name='Example Co', country='KE', onboarded_at=timezone.now())
         OrgProfile.objects.create(
             organization=self.org,
             data_subject_locations=['KE'],

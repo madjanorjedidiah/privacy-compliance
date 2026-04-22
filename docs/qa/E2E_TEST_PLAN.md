@@ -78,7 +78,7 @@ acceptance criteria so a reviewer can tick each one off.
 | # | Acceptance criterion | ✓ |
 |---|---|---|
 | 2.1.1 | New signup → 3-step wizard completes in < 2 min on a fresh browser | |
-| 2.1.2 | Kudu Fintech profile (GH + EU subjects, CA offer, 250k subjects) resolves to: GDPR, Ghana DPA, Kenya DPA (if KE chosen), NDPA (if NG chosen), CCPA | |
+| 2.1.2 | Demo profile (GH HQ + EU subjects + CA offer + 250k subjects) resolves to: GDPR, Ghana DPA, Kenya DPA (if KE chosen), NDPA (if NG chosen), CCPA | |
 | 2.1.3 | Removing EU/California from the profile and re-running the assessment marks old controls NOT_APPLICABLE (or deletes them if untouched) — **zombie check** | |
 | 2.1.4 | The applicability rationale appears on every applicable-framework row | |
 

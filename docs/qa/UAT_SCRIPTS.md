@@ -13,7 +13,7 @@ or at your deploy URL.
 
 1. Fresh workspace:
    ```
-   .venv/bin/python manage.py seed_demo       # re-provisions Kudu Fintech at 0%
+   .venv/bin/python manage.py seed_demo       # re-provisions "Example Organisation" at 0%
    ```
 2. Create one extra user per role you're testing:
    ```python
@@ -21,7 +21,7 @@ or at your deploy URL.
    from accounts.models import Membership, Organization
    from django.contrib.auth import get_user_model
    U = get_user_model()
-   org = Organization.objects.get(slug='kudu-fintech')
+   org = Organization.objects.get(slug='example-org')
    for uname, role in [('uat_dpo','dpo'), ('uat_comp','compliance'), ('uat_audit','auditor'), ('uat_view','viewer')]:
        u, _ = U.objects.get_or_create(username=uname, defaults={'email': uname+'@example.test'})
        u.set_password('UatPass-2026!')
@@ -43,7 +43,7 @@ Owner is the all-rights role. Every button should work.
 | A3 | Click the score tile | Lands on `/compliance/` with 5 jurisdiction cards | | |
 | A4 | Click Ghana jurisdiction card | Requirements listed grouped by category | | |
 | A5 | On `GH-Registration`, click "Implemented" | Pill turns emerald, score rises, flash message shows new status | | |
-| A6 | Click "Use template" on a Privacy Notice row | Pre-filled document opens; Kudu Fintech + "Data Protection Commission" + "Act 843" appear | | |
+| A6 | Click "Use template" on a Privacy Notice row | Pre-filled document opens; org name + "Data Protection Commission" + "Act 843" appear | | |
 | A7 | Download the template as .md | File downloads with a correct filename | | |
 | A8 | Navigate to ROPA → "Add processing activity" | Form loads; `owner` dropdown shows only demo + UAT users | | |
 | A9 | Save one complete activity | Detail page renders with all values | | |

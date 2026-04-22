@@ -1,11 +1,11 @@
-"""Seed / reset the demo workspace (Kudu Fintech) at 0% compliance."""
+"""Seed / reset the demo workspace (Example Organisation) at 0% compliance."""
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 
 class Command(BaseCommand):
-    help = 'Seed demo user + org "Kudu Fintech" at 0% compliance.'
+    help = 'Seed demo user + a generic "Example Organisation" workspace at 0% compliance.'
 
     def handle(self, *args, **options):
         from accounts.models import Membership, Organization, OrgProfile
@@ -43,9 +43,9 @@ class Command(BaseCommand):
             self.stdout.write('SEED_SKIP_PW set — leaving demo password unchanged.')
 
         org, _ = Organization.objects.get_or_create(
-            slug='kudu-fintech',
+            slug='example-org',
             defaults={
-                'name': 'Kudu Fintech',
+                'name': 'Example Organisation',
                 'country': 'GH',
                 'revenue_band': '10-25M',
                 'employee_band': '51-250',

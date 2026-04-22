@@ -14,7 +14,7 @@ class AssessmentFlowTests(TestCase):
         call_command('seed_jurisdictions')
 
     def _setup_org(self, **profile_kwargs):
-        org = Organization.objects.create(name='Kudu Fintech', country='GH', revenue_band='10-25M')
+        org = Organization.objects.create(name='Example Org', country='GH', revenue_band='10-25M')
         profile_defaults = dict(
             data_subject_locations=['GH', 'DE'],
             data_categories=['contact', 'financial'],
