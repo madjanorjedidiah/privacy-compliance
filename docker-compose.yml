@@ -29,7 +29,7 @@ services:
       - path: .env
         required: false
     environment:
-      DJANGO_ENV: prod
+      DJANGO_DEBUG: "0"
       DJANGO_SETTINGS_MODULE: privacy_compliance.settings
       SENTINEL_SECRET_KEY: ${SENTINEL_SECRET_KEY:?SENTINEL_SECRET_KEY must be set in .env}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-mydataprotection.cocoatool.org,privacy_django,privacy_nginx}
@@ -99,7 +99,7 @@ services:
       - path: .env
         required: false
     environment:
-      DJANGO_ENV: prod
+      DJANGO_DEBUG: "0"
       DJANGO_SETTINGS_MODULE: privacy_compliance.settings
       SENTINEL_SECRET_KEY: ${SENTINEL_SECRET_KEY:?SENTINEL_SECRET_KEY must be set in .env}
       DB_ENGINE: django.db.backends.postgresql
@@ -140,7 +140,7 @@ services:
       - path: .env
         required: false
     environment:
-      DJANGO_ENV: prod
+      DJANGO_DEBUG: "0"
       DJANGO_SETTINGS_MODULE: privacy_compliance.settings
       SENTINEL_SECRET_KEY: ${SENTINEL_SECRET_KEY:?SENTINEL_SECRET_KEY must be set in .env}
       DB_ENGINE: django.db.backends.postgresql

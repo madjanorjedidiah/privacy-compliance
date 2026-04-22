@@ -1,24 +1,24 @@
-"""Base settings — environment-agnostic defaults.
+"""Settings for the privacy_compliance Django project.
 
-All site-wide configuration lives here. Environment-specific files (dev.py,
-prod.py, test.py) override what they need and leave the rest alone.
-
-All knobs that could differ between environments are read from environment
-variables via ``django-environ``. Copy ``.env.example`` to ``.env`` to start.
+One file, driven by environment variables so the same module works in
+dev, test, and prod. Copy ``.env.example`` to ``.env`` to populate values.
 """
+import sys
 from pathlib import Path
 
 import environ
 
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# ----- Environment ---------------------------------------------------------
 
 env = environ.Env(
-    DJANGO_DEBUG=(bool, False),
+    DJANGO_DEBUG=(bool, True),
     DJANGO_ALLOWED_HOSTS=(list, []),
     DJANGO_CSRF_TRUSTED_ORIGINS=(list, []),
     DATABASE_URL=(str, ''),
-    # Shared-infra DB_* fallback (pgbouncer defaults on the host).
     DB_ENGINE=(str, 'django.db.backends.postgresql'),
     DB_NAME=(str, ''),
     DB_USER=(str, 'postgres'),
@@ -40,13 +40,45 @@ env = environ.Env(
     DJANGO_SUPERUSER_PASSWORD=(str, ''),
 )
 
-# Load .env if present (noop in environments where it isn't).
 _env_file = BASE_DIR / '.env'
 if _env_file.exists():
     env.read_env(str(_env_file))
 
+DEBUG = env('DJANGO_DEBUG')
+TESTING = 'test' in sys.argv or any(a.startswith('test') for a in sys.argv)
 
-# ----- Applications ---------------------------------------------------------
+
+# ----- Secret key ----------------------------------------------------------
+
+_DEV_SECRET_KEY = 'django-insecure-dev-only-change-in-prod-wpfz7-4gc4pgimbcp'
+
+if TESTING:
+    SECRET_KEY = 'test-secret-key'
+elif DEBUG:
+    SECRET_KEY = env('SENTINEL_SECRET_KEY') or _DEV_SECRET_KEY
+else:
+    SECRET_KEY = env('SENTINEL_SECRET_KEY')
+    if not SECRET_KEY or SECRET_KEY.startswith('django-insecure-'):
+        raise RuntimeError(
+            'SENTINEL_SECRET_KEY must be set to a strong value when DJANGO_DEBUG=0.'
+        )
+
+
+# ----- Hosts / CSRF --------------------------------------------------------
+
+if DEBUG or TESTING:
+    ALLOWED_HOSTS = ['*']
+    CSRF_TRUSTED_ORIGINS = [
+        'http://127.0.0.1:8000', 'http://localhost:8000', 'http://0.0.0.0:8000',
+    ]
+else:
+    ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS') or ['mydataprotection.cocoatool.org']
+    CSRF_TRUSTED_ORIGINS = env('DJANGO_CSRF_TRUSTED_ORIGINS') or [
+        'https://mydataprotection.cocoatool.org',
+    ]
+
+
+# ----- Applications --------------------------------------------------------
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -128,6 +160,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# Fast hashing in tests only
+if TESTING:
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
@@ -136,7 +172,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# ----- Static & media -------------------------------------------------------
+# ----- Static & media ------------------------------------------------------
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
@@ -145,23 +181,35 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+STATICFILES_STORAGE = (
+    'django.contrib.staticfiles.storage.StaticFilesStorage' if (DEBUG or TESTING)
+    else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+)
 
-# ----- Database -------------------------------------------------------------
+
+# ----- Database ------------------------------------------------------------
 
 _DATABASE_URL = env('DATABASE_URL')
-_DB_NAME = env.str('DB_NAME', default='')
-if _DATABASE_URL:
-    DATABASES = {'default': env.db_url('DATABASE_URL')}
-elif _DB_NAME:
-    # Shared-infra style (mirrors docker-compose on the server).
+_DB_NAME = env('DB_NAME')
+
+if TESTING:
     DATABASES = {
         'default': {
-            'ENGINE': env.str('DB_ENGINE', default='django.db.backends.postgresql'),
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
+elif _DATABASE_URL:
+    DATABASES = {'default': env.db_url('DATABASE_URL')}
+elif _DB_NAME:
+    DATABASES = {
+        'default': {
+            'ENGINE': env('DB_ENGINE'),
             'NAME': _DB_NAME,
-            'USER': env.str('DB_USER', default='postgres'),
-            'PASSWORD': env.str('DB_PASSWORD', default=''),
-            'HOST': env.str('DB_HOST', default='pgbouncer'),
-            'PORT': env.str('DB_PORT', default='6432'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
         }
     }
 else:
@@ -172,11 +220,24 @@ else:
         }
     }
 
+if not DEBUG and not TESTING and DATABASES['default']['ENGINE'].endswith('postgresql'):
+    DATABASES['default'].setdefault('CONN_MAX_AGE', 60)
+    DATABASES['default'].setdefault('CONN_HEALTH_CHECKS', True)
+    _db_options = DATABASES['default'].setdefault('OPTIONS', {})
+    _db_options.setdefault('sslmode', env.str('POSTGRES_SSLMODE', default='prefer'))
 
-# ----- Cache ----------------------------------------------------------------
+
+# ----- Cache ---------------------------------------------------------------
 
 _REDIS_URL = env('REDIS_URL')
-if _REDIS_URL:
+if TESTING or not _REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'privacy-compliance-local',
+        }
+    }
+else:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -186,41 +247,46 @@ if _REDIS_URL:
     }
     SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
     SESSION_CACHE_ALIAS = 'default'
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'privacy-compliance-local',
-        }
-    }
 
 
-# ----- Sessions & cookies ---------------------------------------------------
+# ----- Sessions & cookies --------------------------------------------------
 
 SESSION_COOKIE_NAME = 'sentinel_sessionid'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 
-# ----- Logging --------------------------------------------------------------
+# ----- Security headers (prod only) ---------------------------------------
 
-LOG_LEVEL = env('SENTINEL_LOG_LEVEL').upper() or 'INFO'
-LOG_FORMAT = env('SENTINEL_LOG_FORMAT').lower()  # 'text' or 'json'
+if not DEBUG and not TESTING:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = env('SENTINEL_ENABLE_HTTPS')
+    SECURE_HSTS_SECONDS = env('SENTINEL_HSTS_SECONDS') or (60 * 60 * 24 * 365)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = False  # HTMX reads the CSRF cookie
+    X_FRAME_OPTIONS = 'DENY'
+
+
+# ----- Logging -------------------------------------------------------------
+
+LOG_LEVEL = (env('SENTINEL_LOG_LEVEL') or 'INFO').upper()
+LOG_FORMAT = (env('SENTINEL_LOG_FORMAT') or 'text').lower()
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'text': {
-            'format': '[%(asctime)s] %(levelname)s %(name)s %(message)s',
-        },
-        'json': {
-            '()': 'core.logging.JSONFormatter',
-        },
+        'text': {'format': '[%(asctime)s] %(levelname)s %(name)s %(message)s'},
+        'json': {'()': 'core.logging.JSONFormatter'},
     },
-    'filters': {
-        'request_id': {'()': 'core.logging.RequestIDFilter'},
-    },
+    'filters': {'request_id': {'()': 'core.logging.RequestIDFilter'}},
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
@@ -237,13 +303,34 @@ LOGGING = {
 }
 
 
-# ----- Rate limiting --------------------------------------------------------
+# ----- Rate limiting -------------------------------------------------------
 
 SENTINEL_RATE_LIMIT_LOGIN = env('SENTINEL_RATE_LIMIT_LOGIN')
 SENTINEL_RATE_LIMIT_SIGNUP = env('SENTINEL_RATE_LIMIT_SIGNUP')
 
 
-# ----- Branding & domain-specific settings ---------------------------------
+# ----- Email ---------------------------------------------------------------
+
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+elif TESTING:
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+else:
+    EMAIL_BACKEND = env.str('DJANGO_EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = env.str('EMAIL_HOST', default='')
+    EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+    EMAIL_HOST_USER = env.str('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD', default='')
+    EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+    DEFAULT_FROM_EMAIL = env.str(
+        'DJANGO_DEFAULT_FROM_EMAIL',
+        default='Sentinel <no-reply@mydataprotection.cocoatool.org>',
+    )
+    ADMINS = [tuple(a.split(':', 1)) for a in env.list('DJANGO_ADMINS', default=[]) if ':' in a]
+    SERVER_EMAIL = env.str('DJANGO_SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
+
+
+# ----- Branding & domain-specific settings --------------------------------
 
 SENTINEL = {
     'BRAND_NAME': 'Sentinel',
@@ -298,7 +385,8 @@ REST_FRAMEWORK = {
     },
 }
 
-# ----- Celery ---------------------------------------------------------------
+
+# ----- Celery --------------------------------------------------------------
 
 CELERY_BROKER_URL = env('CELERY_BROKER_URL') or env('REDIS_URL') or 'memory://'
 CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND') or env('REDIS_URL') or 'cache+memory://'
