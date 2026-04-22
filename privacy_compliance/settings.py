@@ -28,13 +28,13 @@ env = environ.Env(
     REDIS_URL=(str, ''),
     CELERY_BROKER_URL=(str, ''),
     CELERY_RESULT_BACKEND=(str, ''),
-    SENTINEL_SECRET_KEY=(str, ''),
-    SENTINEL_ENABLE_HTTPS=(bool, False),
-    SENTINEL_HSTS_SECONDS=(int, 0),
-    SENTINEL_LOG_LEVEL=(str, 'INFO'),
-    SENTINEL_LOG_FORMAT=(str, 'text'),
-    SENTINEL_RATE_LIMIT_LOGIN=(str, '5/m'),
-    SENTINEL_RATE_LIMIT_SIGNUP=(str, '10/h'),
+    APP_SECRET_KEY=(str, ''),
+    APP_ENABLE_HTTPS=(bool, False),
+    APP_HSTS_SECONDS=(int, 0),
+    APP_LOG_LEVEL=(str, 'INFO'),
+    APP_LOG_FORMAT=(str, 'text'),
+    APP_RATE_LIMIT_LOGIN=(str, '5/m'),
+    APP_RATE_LIMIT_SIGNUP=(str, '10/h'),
     DJANGO_SUPERUSER_USERNAME=(str, ''),
     DJANGO_SUPERUSER_EMAIL=(str, ''),
     DJANGO_SUPERUSER_PASSWORD=(str, ''),
@@ -55,12 +55,12 @@ _DEV_SECRET_KEY = 'django-insecure-dev-only-change-in-prod-wpfz7-4gc4pgimbcp'
 if TESTING:
     SECRET_KEY = 'test-secret-key'
 elif DEBUG:
-    SECRET_KEY = env('SENTINEL_SECRET_KEY') or _DEV_SECRET_KEY
+    SECRET_KEY = env('APP_SECRET_KEY') or _DEV_SECRET_KEY
 else:
-    SECRET_KEY = env('SENTINEL_SECRET_KEY')
+    SECRET_KEY = env('APP_SECRET_KEY')
     if not SECRET_KEY or SECRET_KEY.startswith('django-insecure-'):
         raise RuntimeError(
-            'SENTINEL_SECRET_KEY must be set to a strong value when DJANGO_DEBUG=0.'
+            'APP_SECRET_KEY must be set to a strong value when DJANGO_DEBUG=0.'
         )
 
 
@@ -251,7 +251,7 @@ else:
 
 # ----- Sessions & cookies --------------------------------------------------
 
-SESSION_COOKIE_NAME = 'sentinel_sessionid'
+SESSION_COOKIE_NAME = 'privacy_sessionid'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
@@ -260,8 +260,8 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 
 if not DEBUG and not TESTING:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = env('SENTINEL_ENABLE_HTTPS')
-    SECURE_HSTS_SECONDS = env('SENTINEL_HSTS_SECONDS') or (60 * 60 * 24 * 365)
+    SECURE_SSL_REDIRECT = env('APP_ENABLE_HTTPS')
+    SECURE_HSTS_SECONDS = env('APP_HSTS_SECONDS') or (60 * 60 * 24 * 365)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -276,8 +276,8 @@ if not DEBUG and not TESTING:
 
 # ----- Logging -------------------------------------------------------------
 
-LOG_LEVEL = (env('SENTINEL_LOG_LEVEL') or 'INFO').upper()
-LOG_FORMAT = (env('SENTINEL_LOG_FORMAT') or 'text').lower()
+LOG_LEVEL = (env('APP_LOG_LEVEL') or 'INFO').upper()
+LOG_FORMAT = (env('APP_LOG_FORMAT') or 'text').lower()
 
 LOGGING = {
     'version': 1,
@@ -305,8 +305,8 @@ LOGGING = {
 
 # ----- Rate limiting -------------------------------------------------------
 
-SENTINEL_RATE_LIMIT_LOGIN = env('SENTINEL_RATE_LIMIT_LOGIN')
-SENTINEL_RATE_LIMIT_SIGNUP = env('SENTINEL_RATE_LIMIT_SIGNUP')
+RATE_LIMIT_LOGIN = env('APP_RATE_LIMIT_LOGIN')
+RATE_LIMIT_SIGNUP = env('APP_RATE_LIMIT_SIGNUP')
 
 
 # ----- Email ---------------------------------------------------------------
@@ -324,7 +324,7 @@ else:
     EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
     DEFAULT_FROM_EMAIL = env.str(
         'DJANGO_DEFAULT_FROM_EMAIL',
-        default='Sentinel <no-reply@mydataprotection.cocoatool.org>',
+        default='Privacy Compliance <no-reply@mydataprotection.cocoatool.org>',
     )
     ADMINS = [tuple(a.split(':', 1)) for a in env.list('DJANGO_ADMINS', default=[]) if ':' in a]
     SERVER_EMAIL = env.str('DJANGO_SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
@@ -332,13 +332,13 @@ else:
 
 # ----- Branding & domain-specific settings --------------------------------
 
-SENTINEL = {
-    'BRAND_NAME': 'Sentinel',
+BRAND = {
+    'BRAND_NAME': 'Privacy Compliance',
     'BRAND_TAGLINE': 'Continuous Data Protection Compliance',
     'PRIMARY_DOMAIN': 'mydataprotection.cocoatool.org',
     'SUPPORT_EMAIL': 'privacy@cocoatool.org',
     'LEGAL_DISCLAIMER': (
-        'Sentinel provides compliance management tooling. Content is '
+        'This platform provides compliance management tooling. Content is '
         'informational and not legal advice; consult qualified counsel for '
         'regulatory decisions.'
     ),

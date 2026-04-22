@@ -13,7 +13,7 @@ python manage.py migrate --noinput
 echo "[entrypoint] collecting static…"
 python manage.py collectstatic --noinput > /dev/null
 
-if [[ "${SENTINEL_SEED:-1}" == "1" ]]; then
+if [[ "${AUTO_SEED:-1}" == "1" ]]; then
   echo "[entrypoint] seeding jurisdictions & templates…"
   python manage.py seed_jurisdictions || true
   python manage.py seed_templates || true

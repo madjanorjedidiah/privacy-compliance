@@ -5,11 +5,11 @@ from django.conf import settings
 
 
 def _cfg(key, default):
-    return settings.SENTINEL.get('DEADLINES', {}).get(key, default)
+    return settings.BRAND.get('DEADLINES', {}).get(key, default)
 
 
 def _per_jur(code, key, default):
-    overrides = settings.SENTINEL.get('DEADLINES_PER_JURISDICTION', {})
+    overrides = settings.BRAND.get('DEADLINES_PER_JURISDICTION', {})
     return overrides.get(code, {}).get(key, default)
 
 

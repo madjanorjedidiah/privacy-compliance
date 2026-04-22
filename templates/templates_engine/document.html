@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="card p-8 max-w-4xl mx-auto">
-  <div class="prose-sentinel whitespace-pre-wrap">{{ doc.rendered_content }}</div>
+  <div class="prose-doc whitespace-pre-wrap">{{ doc.rendered_content }}</div>
 </div>
 <p class="text-xs text-slate-500 mt-4 max-w-4xl mx-auto">Generated from <strong>{{ doc.template.name }}</strong> on {{ doc.created_at|date:"d M Y H:i" }} UTC.</p>
 {% endblock %}

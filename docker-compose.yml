@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════════
-# Sentinel — Privacy & Data Protection Compliance (mydataprotection.cocoatool.org)
+# Privacy Compliance Platform (mydataprotection.cocoatool.org)
 # ═══════════════════════════════════════════════════════════════════════════
 # Connects to EXISTING shared server infrastructure:
 #   - PostgreSQL (postgis_db) via PgBouncer (pgbouncer:6432)
@@ -31,7 +31,7 @@ services:
     environment:
       DJANGO_DEBUG: "0"
       DJANGO_SETTINGS_MODULE: privacy_compliance.settings
-      SENTINEL_SECRET_KEY: ${SENTINEL_SECRET_KEY:?SENTINEL_SECRET_KEY must be set in .env}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-mydataprotection.cocoatool.org,privacy_django,privacy_nginx}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://mydataprotection.cocoatool.org}
       # DB via shared PgBouncer (connection pooling on the host)
@@ -45,9 +45,9 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
-      SENTINEL_LOG_LEVEL: ${SENTINEL_LOG_LEVEL:-INFO}
-      SENTINEL_LOG_FORMAT: ${SENTINEL_LOG_FORMAT:-json}
-      SENTINEL_ENABLE_HTTPS: ${SENTINEL_ENABLE_HTTPS:-0}  # NPM terminates TLS upstream
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
+      APP_ENABLE_HTTPS: ${APP_ENABLE_HTTPS:-0}  # NPM terminates TLS upstream
       DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME:-}
       DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL:-}
       DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD:-}
@@ -101,7 +101,7 @@ services:
     environment:
       DJANGO_DEBUG: "0"
       DJANGO_SETTINGS_MODULE: privacy_compliance.settings
-      SENTINEL_SECRET_KEY: ${SENTINEL_SECRET_KEY:?SENTINEL_SECRET_KEY must be set in .env}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
       DB_ENGINE: django.db.backends.postgresql
       DB_NAME: ${POSTGRES_DB:-privacy_db}
       DB_USER: ${POSTGRES_USER:-postgres}
@@ -111,8 +111,8 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
-      SENTINEL_LOG_LEVEL: ${SENTINEL_LOG_LEVEL:-INFO}
-      SENTINEL_LOG_FORMAT: ${SENTINEL_LOG_FORMAT:-json}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
     networks:
       - nginx_proxy_manager_default
     depends_on:
@@ -142,7 +142,7 @@ services:
     environment:
       DJANGO_DEBUG: "0"
       DJANGO_SETTINGS_MODULE: privacy_compliance.settings
-      SENTINEL_SECRET_KEY: ${SENTINEL_SECRET_KEY:?SENTINEL_SECRET_KEY must be set in .env}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
       DB_ENGINE: django.db.backends.postgresql
       DB_NAME: ${POSTGRES_DB:-privacy_db}
       DB_USER: ${POSTGRES_USER:-postgres}
@@ -152,8 +152,8 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
-      SENTINEL_LOG_LEVEL: ${SENTINEL_LOG_LEVEL:-INFO}
-      SENTINEL_LOG_FORMAT: ${SENTINEL_LOG_FORMAT:-json}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
     networks:
       - nginx_proxy_manager_default
     depends_on:

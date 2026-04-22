@@ -1,4 +1,4 @@
-"""Celery application for Sentinel.
+"""Celery application for the Privacy Compliance platform.
 
 Broker / backend are read from Django settings (CELERY_BROKER_URL and
 CELERY_RESULT_BACKEND) so ops controls them via environment variables.

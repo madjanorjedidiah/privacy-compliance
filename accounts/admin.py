@@ -7,7 +7,7 @@ from .models import Membership, Organization, OrgProfile, User
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
     fieldsets = DjangoUserAdmin.fieldsets + (
-        ('Sentinel', {'fields': ('display_name', 'job_title')}),
+        ('Profile', {'fields': ('display_name', 'job_title')}),
     )
 
 

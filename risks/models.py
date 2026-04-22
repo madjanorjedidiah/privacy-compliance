@@ -6,7 +6,7 @@ from core.models import OrgScopedModel
 
 
 def _scoring_config():
-    return settings.SENTINEL['RISK_SCORING']
+    return settings.BRAND['RISK_SCORING']
 
 
 class Risk(OrgScopedModel):
@@ -60,7 +60,7 @@ class Risk(OrgScopedModel):
     def compute_scores(self):
         """Compute inherent and residual risk scores and severity label.
 
-        Weights are read from settings.SENTINEL['RISK_SCORING'] so operators
+        Weights are read from settings.BRAND['RISK_SCORING'] so operators
         can tune sensitivity without touching model code.
         """
         cfg = _scoring_config()

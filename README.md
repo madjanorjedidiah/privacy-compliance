@@ -1,10 +1,10 @@
-# Sentinel — Multi-Jurisdictional Data Protection Compliance Platform
+# Privacy Compliance — Multi-Jurisdictional Data Protection Platform
 
 > Tell us what your business does; we tell you exactly which data-protection laws apply across Ghana, Kenya, Nigeria, USA and Europe — track readiness, score risk, generate policies.
 
 ## What it does
 
-Sentinel is a Django + PostgreSQL/SQLite application that turns data-protection compliance from a one-off audit into a continuous posture. For any organisation it:
+A Django + PostgreSQL application that turns data-protection compliance from a one-off audit into a continuous posture. For any organisation it:
 
 1. **Scopes** which laws apply — GDPR, Ghana DPA 2012, Kenya DPA 2019, Nigeria NDPA 2023, CCPA/CPRA — based on a 3-step profile wizard
 2. **Tracks** progress against every obligation with an auditable control register and evidence vault
@@ -16,7 +16,7 @@ Sentinel is a Django + PostgreSQL/SQLite application that turns data-protection 
 
 ## Business value (CEO view)
 
-| Competitors | Sentinel's innovation |
+| Competitors | Our innovation |
 |---|---|
 | Static checklists | Dynamic jurisdiction router — only what applies to you |
 | Generic templates | Contextual template engine — filled from your org profile |
@@ -60,7 +60,7 @@ Services launched by `docker-compose.yml`:
 
 | Service | Purpose |
 |---|---|
-| `privacy_django` | gunicorn serving the Sentinel Django app |
+| `privacy_django` | gunicorn serving the Django app |
 | `privacy_celery` | Celery worker (DPA expiry sweeps, training reminders, ad-hoc jobs) |
 | `privacy_beat` | Celery Beat scheduler (DB-backed via `django_celery_beat`) |
 | `privacy_nginx` | Internal nginx — static/media + upstream routing, behind NPM |
@@ -68,7 +68,7 @@ Services launched by `docker-compose.yml`:
 Deploy steps:
 
 ```bash
-cp .env.example .env               # fill in SENTINEL_SECRET_KEY + POSTGRES_PASSWORD
+cp .env.example .env               # fill in APP_SECRET_KEY + POSTGRES_PASSWORD
 docker compose build
 docker compose up -d
 # Point an NPM proxy host from mydataprotection.cocoatool.org → privacy_nginx:80
@@ -108,7 +108,7 @@ docs/superpowers/specs/2026-04-22-privacy-compliance-design.md  Design spec
 
 ## Legal disclaimer
 
-Sentinel provides compliance management tooling. Content shipped in the catalog and templates is a best-effort paraphrase of public sources and is **not legal advice**. Consult qualified counsel in each jurisdiction before publication.
+This platform provides compliance management tooling. Content shipped in the catalog and templates is a best-effort paraphrase of public sources and is **not legal advice**. Consult qualified counsel in each jurisdiction before publication.
 
 ## Status
 

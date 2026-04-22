@@ -7,11 +7,11 @@
 <form method="get" class="card p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
   <div class="form-field md:col-span-2">
     <label for="q">Search</label>
-    <input type="text" name="q" id="q" value="{{ q }}" placeholder="Search requirement title or code…" class="sentinel-input"/>
+    <input type="text" name="q" id="q" value="{{ q }}" placeholder="Search requirement title or code…" class="form-input"/>
   </div>
   <div class="form-field">
     <label for="status">Status</label>
-    <select name="status" id="status" class="sentinel-input">
+    <select name="status" id="status" class="form-input">
       <option value="">All</option>
       {% for s, label in status_choices %}
         <option value="{{ s }}" {% if s == current_status %}selected{% endif %}>{{ label }}</option>
@@ -20,7 +20,7 @@
   </div>
   <div class="form-field">
     <label for="framework">Framework</label>
-    <select name="framework" id="framework" class="sentinel-input">
+    <select name="framework" id="framework" class="form-input">
       <option value="">All</option>
       {% for f in frameworks %}
         <option value="{{ f.code }}" {% if f.code == current_framework %}selected{% endif %}>{{ f.jurisdiction.flag_emoji }} {{ f.short_name }}</option>
@@ -33,7 +33,7 @@
 </form>
 
 <div class="card overflow-hidden">
-  <table class="table-sentinel">
+  <table class="data-table">
     <thead>
       <tr>
         <th>Code</th><th>Requirement</th><th>Framework</th><th>Category</th><th>Owner</th><th>Due</th><th>Status</th><th class="w-24"></th>

@@ -1,4 +1,4 @@
-/* Sentinel — custom styles layered on top of Tailwind CDN */
+/* Privacy Compliance — custom styles layered on top of Tailwind CDN */
 
 :root {
   --color-bg: #f7f8fb;
@@ -67,19 +67,19 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
   border: 1px solid var(--color-border);
 }
 
-.table-sentinel { width: 100%; border-collapse: separate; border-spacing: 0; }
-.table-sentinel th { text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-muted); padding: 0.65rem 0.9rem; background: #f8fafc; border-bottom: 1px solid var(--color-border); }
-.table-sentinel td { padding: 0.8rem 0.9rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
-.table-sentinel tbody tr:hover { background: #fafbfe; }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.data-table th { text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-muted); padding: 0.65rem 0.9rem; background: #f8fafc; border-bottom: 1px solid var(--color-border); }
+.data-table td { padding: 0.8rem 0.9rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+.data-table tbody tr:hover { background: #fafbfe; }
 
-.prose-sentinel h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.8rem; }
-.prose-sentinel h2 { font-size: 1.15rem; font-weight: 700; margin-top: 1.2rem; margin-bottom: 0.4rem; }
-.prose-sentinel h3 { font-size: 1rem; font-weight: 600; margin-top: 0.9rem; margin-bottom: 0.35rem; }
-.prose-sentinel p { margin: 0.4rem 0; line-height: 1.55; }
-.prose-sentinel ul { padding-left: 1.3rem; margin: 0.4rem 0; }
-.prose-sentinel li { list-style: disc; margin: 0.15rem 0; }
-.prose-sentinel table { width: 100%; border-collapse: collapse; margin: 0.6rem 0; font-size: 0.85rem; }
-.prose-sentinel th, .prose-sentinel td { border: 1px solid var(--color-border); padding: 0.4rem; }
+.prose-doc h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.8rem; }
+.prose-doc h2 { font-size: 1.15rem; font-weight: 700; margin-top: 1.2rem; margin-bottom: 0.4rem; }
+.prose-doc h3 { font-size: 1rem; font-weight: 600; margin-top: 0.9rem; margin-bottom: 0.35rem; }
+.prose-doc p { margin: 0.4rem 0; line-height: 1.55; }
+.prose-doc ul { padding-left: 1.3rem; margin: 0.4rem 0; }
+.prose-doc li { list-style: disc; margin: 0.15rem 0; }
+.prose-doc table { width: 100%; border-collapse: collapse; margin: 0.6rem 0; font-size: 0.85rem; }
+.prose-doc th, .prose-doc td { border: 1px solid var(--color-border); padding: 0.4rem; }
 
 .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.9rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; cursor: pointer; }
 .btn-primary { background: var(--color-brand); color: #fff; }
@@ -98,11 +98,11 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
 .form-field input[type=number],
 .form-field select,
 .form-field textarea,
-input.sentinel-input, select.sentinel-input, textarea.sentinel-input {
+input.form-input, select.form-input, textarea.form-input {
   width: 100%; padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-border);
   background: #fff; font-size: 0.9rem;
 }
-.form-field .helptext, .sentinel-help { font-size: 0.78rem; color: var(--color-ink-muted); margin-top: 0.3rem; }
+.form-field .helptext, .form-help { font-size: 0.78rem; color: var(--color-ink-muted); margin-top: 0.3rem; }
 .form-field ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.3rem; }
 .form-field ul li label { font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 0.45rem; }
 

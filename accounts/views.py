@@ -5,8 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView as DjangoLoginView, LogoutView as DjangoLogoutView
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.decorators import method_decorator
-from django_ratelimit.decorators import ratelimit
 
 from .forms import SignupForm
 from .models import Membership, Organization, OrgProfile
@@ -17,7 +15,7 @@ def signup(request):
         from django_ratelimit.core import is_ratelimited
         if is_ratelimited(
             request, group='signup', key='ip',
-            rate=settings.SENTINEL_RATE_LIMIT_SIGNUP, method='POST', increment=True,
+            rate=settings.RATE_LIMIT_SIGNUP, method='POST', increment=True,
         ):
             return render(request, 'accounts/rate_limited.html', status=429)
     if request.user.is_authenticated:
@@ -41,7 +39,7 @@ def signup(request):
             )
 
             login(request, user)
-            messages.success(request, 'Welcome to Sentinel! Let\'s scope your compliance.')
+            messages.success(request, 'Welcome! Let\'s scope your compliance.')
             return redirect('onboarding:basics')
     else:
         form = SignupForm()
@@ -55,7 +53,7 @@ class LoginView(DjangoLoginView):
         from django_ratelimit.core import is_ratelimited
         if is_ratelimited(
             request, group='login', key='ip',
-            rate=settings.SENTINEL_RATE_LIMIT_LOGIN, method='POST', increment=True,
+            rate=settings.RATE_LIMIT_LOGIN, method='POST', increment=True,
         ):
             return render(request, 'accounts/rate_limited.html', status=429)
         return super().post(request, *args, **kwargs)

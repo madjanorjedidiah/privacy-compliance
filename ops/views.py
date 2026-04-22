@@ -12,7 +12,7 @@ log = logging.getLogger('privacy_compliance.ops')
 
 def health(request):
     """Lightweight liveness check — returns 200 if the process is running."""
-    return JsonResponse({'status': 'alive', 'brand': settings.SENTINEL['BRAND_NAME']})
+    return JsonResponse({'status': 'alive', 'brand': settings.BRAND['BRAND_NAME']})
 
 
 def readyz(request):
