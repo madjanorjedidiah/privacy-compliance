@@ -7,7 +7,7 @@ from django.db import connection
 from django.http import JsonResponse
 
 
-log = logging.getLogger('sentinel.ops')
+log = logging.getLogger('privacy_compliance.ops')
 
 
 def health(request):

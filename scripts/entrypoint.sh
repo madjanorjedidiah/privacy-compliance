@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd /app
 
-export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-sentinel.settings}"
+export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-privacy_compliance.settings}"
 
 echo "[entrypoint] django env=${DJANGO_ENV:-unset} settings=${DJANGO_SETTINGS_MODULE}"
 

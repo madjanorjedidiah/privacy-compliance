@@ -17,9 +17,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt gunicorn
 
 COPY . .
 
-RUN useradd --create-home --shell /bin/bash sentinel \
-    && chown -R sentinel:sentinel /app
-USER sentinel
+RUN useradd --create-home --shell /bin/bash privacy \
+    && chown -R privacy:privacy /app
+USER privacy
 
 ENV DJANGO_ENV=prod \
     DJANGO_DEBUG=0 \
@@ -31,4 +31,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD wget -qO- "http://127.0.0.1:${PORT}/ops/health/" >/dev/null || exit 1
 
 ENTRYPOINT ["/app/scripts/entrypoint.sh"]
-CMD ["gunicorn", "sentinel.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", "-"]
+CMD ["gunicorn", "privacy_compliance.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", "-"]

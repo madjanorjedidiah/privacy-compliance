@@ -88,7 +88,7 @@ collection, and (optionally) superuser provisioning on startup.
 ## Layout
 
 ```
-sentinel/            project settings + root URL config
+privacy_compliance/  project settings + root URL config (matches repo name — find config by parent folder)
 core/                shared utilities (TimeStampedModel, choices, context processors)
 accounts/            Organization, User, Membership, OrgProfile + onboarding wizard
 jurisdictions/       Jurisdiction, Framework, Requirement, crosswalk, applicability engine + seed data

@@ -93,7 +93,7 @@ MIDDLEWARE = [
     'accounts.middleware.ActiveOrgMiddleware',
 ]
 
-ROOT_URLCONF = 'sentinel.urls'
+ROOT_URLCONF = 'privacy_compliance.urls'
 
 TEMPLATES = [
     {
@@ -113,7 +113,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'sentinel.wsgi.application'
+WSGI_APPLICATION = 'privacy_compliance.wsgi.application'
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'accounts:login'
@@ -190,7 +190,7 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'sentinel-local',
+            'LOCATION': 'privacy-compliance-local',
         }
     }
 
@@ -232,7 +232,7 @@ LOGGING = {
     'loggers': {
         'django.security': {'handlers': ['console'], 'level': 'WARNING', 'propagate': False},
         'django.db.backends': {'handlers': ['console'], 'level': 'WARNING', 'propagate': False},
-        'sentinel': {'handlers': ['console'], 'level': LOG_LEVEL, 'propagate': False},
+        'privacy_compliance': {'handlers': ['console'], 'level': LOG_LEVEL, 'propagate': False},
     },
 }
 
