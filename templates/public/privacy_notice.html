@@ -1,0 +1,59 @@
+{% extends 'public/_public_shell.html' %}
+{% block title %}Privacy Notice{% endblock %}
+{% block legal %}
+<h1>Privacy Notice</h1>
+<p class="text-sm text-slate-500">Effective date: 2026-04-22</p>
+
+<p>This notice describes how <strong>{{ BRAND.BRAND_NAME }}</strong> (operated at <strong>{{ BRAND.PRIMARY_DOMAIN }}</strong>) processes personal data of the humans who use the platform (our "app users"). It is written to satisfy GDPR Arts. 12–14, Ghana Data Protection Act, 2012 (Act 843) s.24, Kenya DPA 2019 s.29, Nigeria NDPA 2023 s.27 and the CCPA/CPRA.</p>
+
+<h2>1. Who we are</h2>
+<ul>
+  <li><strong>Controller:</strong> {{ BRAND.BRAND_NAME }}, {{ BRAND.PRIMARY_DOMAIN }}</li>
+  <li><strong>Contact / DPO:</strong> <a href="mailto:{{ BRAND.SUPPORT_EMAIL }}">{{ BRAND.SUPPORT_EMAIL }}</a></li>
+</ul>
+
+<h2>2. What personal data we process about app users</h2>
+<ul>
+  <li>Account identity — username, email, display name, job title</li>
+  <li>Authentication metadata — timestamps, IP address and user-agent of logins / logouts / failed attempts (for account security and breach detection)</li>
+  <li>Organisation membership — the workspace you belong to and your role</li>
+  <li>Content you enter — control status updates, evidence filenames, risk notes, DPIA narratives, etc.</li>
+</ul>
+
+<h2>3. Purposes and lawful bases</h2>
+<ul>
+  <li><strong>Performing our contract with you / your employer</strong> — to deliver the compliance workspace (GDPR Art. 6(1)(b)).</li>
+  <li><strong>Legitimate interests</strong> (GDPR Art. 6(1)(f)) — account security, fraud prevention, auditability. Failed-login IPs are retained for 12 months to detect credential-stuffing.</li>
+  <li><strong>Legal obligation</strong> — to maintain the audit trails a regulator may require of us as a processor.</li>
+</ul>
+
+<h2>4. Data we process on behalf of your organisation</h2>
+<p>Content entered about your compliance programme (ROPA entries, DPIAs, controls, risks, vendor records, DSARs you log) is processed under your organisation's instructions — your employer is the controller, we act as processor for that data. A separate Data Processing Agreement (DPA) governs that relationship.</p>
+
+<h2>5. Recipients and sub-processors</h2>
+<p>Hosting, database, object storage, and email delivery providers process data on our behalf under written DPAs. A live list of sub-processors is available on request.</p>
+
+<h2>6. International transfers</h2>
+<p>Primary hosting is located in the country agreed with your organisation. Where any transfer crosses borders, we rely on Standard Contractual Clauses or an adequacy decision, plus a Transfer Impact Assessment where warranted.</p>
+
+<h2>7. Retention</h2>
+<ul>
+  <li>Account records — for the duration of your membership plus 12 months.</li>
+  <li>Authentication logs — 12 months from the event.</li>
+  <li>Tenant content (your workspace data) — per your organisation's retention schedule.</li>
+</ul>
+
+<h2>8. Your rights</h2>
+<p>You may exercise the following rights at any time:</p>
+<ul>
+  <li><strong>Access</strong> — download a machine-readable copy of the data we hold on your user account at <a href="{% url 'accounts:profile' %}">your profile page</a>.</li>
+  <li><strong>Erasure</strong> — self-service account deletion on the same page.</li>
+  <li><strong>Rectification, restriction, objection, portability</strong> — email <a href="mailto:{{ BRAND.SUPPORT_EMAIL }}">{{ BRAND.SUPPORT_EMAIL }}</a>; we respond within 30 days (45 days for California residents).</li>
+</ul>
+
+<h2>9. Complaints</h2>
+<p>You may lodge a complaint with your local supervisory authority — the Data Protection Commission of Ghana, the Office of the Data Protection Commissioner of Kenya, the Nigeria Data Protection Commission, your EU lead authority, or the California Privacy Protection Agency.</p>
+
+<h2>10. Changes</h2>
+<p>We will post material changes here and record the new effective date. Substantive changes will be notified to active users by email.</p>
+{% endblock %}

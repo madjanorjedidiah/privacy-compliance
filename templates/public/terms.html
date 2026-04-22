@@ -1,0 +1,40 @@
+{% extends 'public/_public_shell.html' %}
+{% block title %}Terms of Service{% endblock %}
+{% block legal %}
+<h1>Terms of Service</h1>
+<p class="text-sm text-slate-500">Effective date: 2026-04-22</p>
+
+<h2>1. Scope</h2>
+<p>These Terms govern use of {{ BRAND.BRAND_NAME }} ("the Service") at {{ BRAND.PRIMARY_DOMAIN }}. By accessing or using the Service you agree to these Terms.</p>
+
+<h2>2. Account responsibilities</h2>
+<ul>
+  <li>Keep your credentials secret. Notify <a href="mailto:{{ BRAND.SUPPORT_EMAIL }}">{{ BRAND.SUPPORT_EMAIL }}</a> immediately if you suspect compromise.</li>
+  <li>You must be 18+ to register an account.</li>
+  <li>You are responsible for the accuracy of the compliance information you enter.</li>
+</ul>
+
+<h2>3. Acceptable use</h2>
+<p>You will not attempt to breach access controls, upload malware, scrape other tenants' data, or use the Service to process data you have no lawful basis to process.</p>
+
+<h2>4. Data processing</h2>
+<p>Where the Service processes personal data on your organisation's behalf, the accompanying Data Processing Agreement (DPA) applies. The DPA forms part of these Terms.</p>
+
+<h2>5. No legal advice</h2>
+<p>{{ BRAND.LEGAL_DISCLAIMER }}</p>
+
+<h2>6. Availability</h2>
+<p>We aim for high availability but do not guarantee uninterrupted Service. Planned maintenance is notified in advance where practicable.</p>
+
+<h2>7. Limitation of liability</h2>
+<p>To the fullest extent permitted by law, neither party is liable for indirect or consequential loss. Liability for direct loss is capped at the fees paid in the 12 months preceding the event giving rise to the claim.</p>
+
+<h2>8. Termination</h2>
+<p>Either party may terminate for material breach on 30 days' written notice. Upon termination we will export your workspace data in a machine-readable format and delete it within 30 days, unless law requires us to retain it longer.</p>
+
+<h2>9. Governing law</h2>
+<p>These Terms are governed by the laws applicable to the controller organisation's jurisdiction, with the courts in that jurisdiction having non-exclusive jurisdiction.</p>
+
+<h2>10. Changes</h2>
+<p>We will post amendments here with a new effective date. Continued use after material changes constitutes acceptance.</p>
+{% endblock %}

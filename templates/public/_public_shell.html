@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="min-h-screen bg-slate-50">
+  <header class="bg-white border-b">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <span class="inline-flex w-8 h-8 items-center justify-center rounded-md bg-brand-700 text-white font-black">S</span>
+        <span class="font-bold">{{ BRAND.BRAND_NAME }}</span>
+      </a>
+      <nav class="flex gap-4 text-sm text-slate-600">
+        <a href="{% url 'public:privacy' %}" class="hover:text-brand-700">Privacy</a>
+        <a href="{% url 'public:terms' %}" class="hover:text-brand-700">Terms</a>
+        <a href="{% url 'public:cookies' %}" class="hover:text-brand-700">Cookies</a>
+        <a href="{% url 'accounts:login' %}" class="text-brand-700 font-semibold">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-6 py-10">
+    <article class="card p-8 prose-doc">
+      {% block legal %}{% endblock %}
+    </article>
+  </main>
+
+  <footer class="max-w-4xl mx-auto px-6 py-6 text-xs text-slate-500 text-center">
+    © {{ BRAND.BRAND_NAME }} — {{ BRAND.LEGAL_DISCLAIMER }}
+  </footer>
+</div>
+{% endblock %}

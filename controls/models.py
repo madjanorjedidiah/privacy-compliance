@@ -34,6 +34,10 @@ class Control(OrgScopedModel):
     class Meta:
         unique_together = ('organization', 'requirement')
         ordering = ['requirement__framework__short_name', 'requirement__code']
+        indexes = [
+            models.Index(fields=['organization', 'status']),
+            models.Index(fields=['organization', 'due_date']),
+        ]
 
     def __str__(self):
         return f'{self.requirement.code} — {self.organization}'

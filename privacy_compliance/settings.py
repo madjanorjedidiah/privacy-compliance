@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     'django_htmx',
     'rest_framework',
     'django_celery_beat',
+    'axes',
 
     'core',
     'accounts',
@@ -121,8 +122,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
+    'csp.middleware.CSPMiddleware',
     'core.middleware.RequestIDMiddleware',
     'accounts.middleware.ActiveOrgMiddleware',
+    'axes.middleware.AxesMiddleware',  # axes middleware must be LAST in the chain
+]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 ROOT_URLCONF = 'privacy_compliance.urls'
@@ -311,7 +319,9 @@ RATE_LIMIT_SIGNUP = env('APP_RATE_LIMIT_SIGNUP')
 # Behind nginx (and Nginx Proxy Manager in prod), the real client IP arrives
 # in X-Forwarded-For. Without this, django-ratelimit keys on REMOTE_ADDR
 # which is always the proxy container — effectively a global rate limit.
-RATELIMIT_IP_META_KEY = 'HTTP_X_FORWARDED_FOR'
+# The rate-limit view code uses the dotted path ``core.ratelimit.client_ip``
+# as its ``key=`` argument, which reads X-Forwarded-For with a REMOTE_ADDR
+# fallback so local dev + tests still work without the header.
 
 # In prod, insist that the rate-limit counter live in Redis. LocMem is
 # per-worker, so under gunicorn with N workers the limit is silently Nx.
@@ -413,3 +423,44 @@ CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_TASK_TIME_LIMIT = 300
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+
+# ----- Account lockout (django-axes) --------------------------------------
+# Protects against credential stuffing & brute force. Locks per
+# (username, IP) after N failed attempts within a cooldown window.
+AXES_ENABLED = not TESTING
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 1  # hours
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = 'accounts/rate_limited.html'
+AXES_IPWARE_META_PRECEDENCE_ORDER = ('HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR')
+
+
+# ----- Content Security Policy (django-csp 4.x) ---------------------------
+# Tight defaults: self only, plus the CDNs the UI pulls at runtime
+# (Tailwind, HTMX, Alpine).
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': ["'self'"],
+        'script-src': [
+            "'self'",
+            "'unsafe-inline'",   # inline tailwind.config block
+            'https://cdn.tailwindcss.com',
+            'https://unpkg.com',
+        ],
+        'style-src': [
+            "'self'",
+            "'unsafe-inline'",   # inline style attrs + Tailwind JIT
+            'https://cdn.tailwindcss.com',
+            'https://fonts.googleapis.com',
+        ],
+        'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+        'img-src': ["'self'", 'data:', 'https:'],
+        'connect-src': ["'self'"],
+        'frame-ancestors': ["'none'"],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+    },
+}

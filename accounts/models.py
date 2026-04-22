@@ -47,11 +47,12 @@ class Organization(TimeStampedModel):
     def save(self, *args, **kwargs):
         if not self.slug:
             base = slugify(self.name)[:140] or 'org'
-            # Race-safe: retry with a random suffix on IntegrityError rather
-            # than pre-checking for uniqueness (TOCTOU).
+            # Race-safe slug assignment: rely on the DB unique constraint
+            # instead of a TOCTOU `filter().exists()` check. Retry with a
+            # random suffix if another concurrent save took the candidate
+            # (or if this row already owns a different slug that collides).
             for attempt in range(6):
-                candidate = base if attempt == 0 else f'{base}-{secrets.token_hex(3)}'
-                self.slug = candidate
+                self.slug = base if attempt == 0 else f'{base}-{secrets.token_hex(3)}'
                 try:
                     with transaction.atomic():
                         return super().save(*args, **kwargs)
@@ -115,6 +116,43 @@ class OrgProfile(TimeStampedModel):
 
     def __str__(self):
         return f'Profile of {self.organization}'
+
+
+class AuthEvent(TimeStampedModel):
+    """Append-only audit log of authentication events for this workspace.
+
+    Populated via Django signals (``user_logged_in``, ``user_login_failed``,
+    ``user_logged_out``). Retained for compliance / breach-detection review.
+    """
+    class Kind(models.TextChoices):
+        LOGIN_OK = 'login_ok', 'Login succeeded'
+        LOGIN_FAIL = 'login_fail', 'Login failed'
+        LOGOUT = 'logout', 'Logout'
+        PASSWORD_CHANGE = 'password_change', 'Password changed'
+        ACCOUNT_DELETE = 'account_delete', 'Account deleted'
+        DATA_EXPORT = 'data_export', 'Data export requested'
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='auth_events',
+    )
+    username_attempted = models.CharField(max_length=150, blank=True)
+    kind = models.CharField(max_length=24, choices=Kind.choices)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=400, blank=True)
+    meta = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['kind', '-created_at']),
+        ]
+
+    def __str__(self):
+        who = self.user or self.username_attempted or '—'
+        return f'{self.created_at:%Y-%m-%d %H:%M} {self.kind} {who}'
 
 
 class Membership(TimeStampedModel):

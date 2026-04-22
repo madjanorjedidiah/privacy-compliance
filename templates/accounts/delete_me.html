@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Delete account{% endblock %}
+{% block topbar_eyebrow %}Profile{% endblock %}
+{% block topbar_title %}Delete my account{% endblock %}
+{% block topbar_actions %}<a href="{% url 'accounts:profile' %}" class="btn btn-outline">← Back</a>{% endblock %}
+
+{% block content %}
+<div class="card p-6 max-w-xl">
+  <h2 class="text-lg font-semibold text-rose-700">Permanently delete your account</h2>
+  <p class="text-sm text-slate-600 mt-2">This erases your user account, memberships, and authentication history under GDPR Art. 17 / Ghana DPA s.33. Data belonging to the organisation (controls, DSARs, evidence) is retained by the controller on legal grounds and is not removed by this action.</p>
+
+  {% if owns_solo_org %}
+    <p class="mt-4 p-3 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+      You are the sole Owner of at least one workspace. Transfer ownership to another member before deleting your account, otherwise the workspace would be orphaned.
+    </p>
+  {% else %}
+    <form method="post" class="mt-5 space-y-4">
+      {% csrf_token %}
+      <div class="form-field">
+        <label for="confirm">Type your username <code class="px-1 rounded bg-slate-100">{{ user.username }}</code> to confirm</label>
+        <input type="text" name="confirm" id="confirm" class="form-input" autocomplete="off"/>
+      </div>
+      <div class="flex justify-end gap-2">
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline">Cancel</a>
+        <button class="btn btn-danger">Delete account</button>
+      </div>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

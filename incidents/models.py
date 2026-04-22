@@ -29,6 +29,10 @@ class Incident(OrgScopedModel):
 
     class Meta:
         ordering = ['-detected_at']
+        indexes = [
+            models.Index(fields=['organization', 'status']),
+            models.Index(fields=['organization', '-detected_at']),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.regulator_deadline:

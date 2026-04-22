@@ -9,6 +9,7 @@ urlpatterns = [
     path('', RedirectView.as_view(pattern_name='dashboard:home', permanent=False)),
     path('admin/', admin.site.urls),
     path('ops/', include('ops.urls', namespace='ops')),
+    path('', include('core.urls', namespace='public')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('onboarding/', include('accounts.onboarding_urls', namespace='onboarding')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),

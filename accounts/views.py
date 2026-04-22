@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView as DjangoLoginView, LogoutView as DjangoLogoutView
 from django.shortcuts import redirect, render
-from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 from .forms import SignupForm
 from .models import Membership, Organization, OrgProfile
@@ -14,7 +14,7 @@ def signup(request):
     if request.method == 'POST':
         from django_ratelimit.core import is_ratelimited
         if is_ratelimited(
-            request, group='signup', key='ip',
+            request, group='signup', key='core.ratelimit.client_ip',
             rate=settings.RATE_LIMIT_SIGNUP, method='POST', increment=True,
         ):
             return render(request, 'accounts/rate_limited.html', status=429)
@@ -52,7 +52,7 @@ class LoginView(DjangoLoginView):
     def post(self, request, *args, **kwargs):
         from django_ratelimit.core import is_ratelimited
         if is_ratelimited(
-            request, group='login', key='ip',
+            request, group='login', key='core.ratelimit.client_ip',
             rate=settings.RATE_LIMIT_LOGIN, method='POST', increment=True,
         ):
             return render(request, 'accounts/rate_limited.html', status=429)

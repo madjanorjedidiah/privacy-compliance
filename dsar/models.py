@@ -28,6 +28,10 @@ class DSARRequest(OrgScopedModel):
 
     class Meta:
         ordering = ['-received_at']
+        indexes = [
+            models.Index(fields=['organization', 'status']),
+            models.Index(fields=['organization', '-received_at']),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.due_at:

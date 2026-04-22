@@ -53,6 +53,10 @@ class Risk(OrgScopedModel):
 
     class Meta:
         ordering = ['-residual_score', 'title']
+        indexes = [
+            models.Index(fields=['organization', '-residual_score']),
+            models.Index(fields=['organization', 'severity']),
+        ]
 
     def __str__(self):
         return self.title

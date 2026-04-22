@@ -2,12 +2,29 @@
 {% block title %}Profile{% endblock %}
 {% block topbar_title %}Profile{% endblock %}
 {% block content %}
-<div class="card p-6 max-w-2xl">
-  <h2 class="text-lg font-semibold">{{ user.friendly_name }}</h2>
-  <p class="text-sm text-slate-500">{{ user.email }}</p>
-  <div class="mt-4 text-sm">
-    <p><span class="text-slate-500">Workspace:</span> <strong>{{ active_org.name }}</strong></p>
-    <p><span class="text-slate-500">Role:</span> {{ active_membership.get_role_display }}</p>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-4xl">
+  <div class="card p-6">
+    <h2 class="text-lg font-semibold">{{ user.friendly_name }}</h2>
+    <p class="text-sm text-slate-500">{{ user.email }}</p>
+    <div class="mt-4 text-sm">
+      <p><span class="text-slate-500">Workspace:</span> <strong>{{ active_org.name }}</strong></p>
+      <p><span class="text-slate-500">Role:</span> {{ active_membership.get_role_display }}</p>
+      <p class="text-slate-500 mt-2">Signed in from {{ request.META.REMOTE_ADDR }}</p>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <h3 class="text-lg font-semibold">Your data rights</h3>
+    <p class="text-sm text-slate-500 mt-1">Under GDPR Art. 15 / 17 and Ghana DPA s.32–33 you can export or erase the personal data we hold about your user account.</p>
+
+    <form method="post" action="{% url 'accounts:export_me' %}" class="mt-5">
+      {% csrf_token %}
+      <button class="btn btn-outline w-full">⬇️ Download my data (JSON)</button>
+    </form>
+
+    <a href="{% url 'accounts:delete_me' %}" class="btn btn-danger w-full justify-center mt-3">🗑️ Delete my account</a>
+
+    <p class="text-xs text-slate-400 mt-4">Organisation data (controls, DSARs, evidence) belongs to your workspace controller and is retained on legal grounds. Ask the workspace Owner to remove you from the workspace instead, if that is what you intend.</p>
   </div>
 </div>
 {% endblock %}
