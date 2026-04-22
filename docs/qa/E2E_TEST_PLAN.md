@@ -205,7 +205,7 @@ Automated by: ✅ `accounts.test_privacy_pages`.
 
 | # | Acceptance criterion | ✓ |
 |---|---|---|
-| 3.4.1 | `privacy@cocoatool.org` inbox monitored within business hours | |
+| 3.4.1 | `privacy@privacy.domain` inbox monitored within business hours | |
 | 3.4.2 | DSAR drill completed (see `DSAR_DRILL.md`) | |
 | 3.4.3 | Response templates per request type signed off | |
 

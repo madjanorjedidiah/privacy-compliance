@@ -13,7 +13,7 @@ the backport yourself — we do not maintain support branches.
 
 **Please do not open a public GitHub Issue for a suspected vulnerability.**
 
-Email **privacy@cocoatool.org** with:
+Email **privacy@privacy.domain** with:
 
 - A short description of the vulnerability
 - Affected commit SHA or release tag

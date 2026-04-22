@@ -87,7 +87,7 @@ docker compose exec privacy_django python manage.py createsuperuser
 
 ## 6. Data-subject-request readiness
 
-- [ ] Inbox for `privacy@cocoatool.org` monitored by the DPO.
+- [ ] Inbox for `privacy@privacy.domain` monitored by the DPO.
 - [ ] Internal DSAR runbook tested against the seeded DSAR workflow.
 - [ ] 30-day SLA clock documented in ticketing.
 

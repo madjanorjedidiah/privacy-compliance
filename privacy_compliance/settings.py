@@ -367,7 +367,7 @@ BRAND = {
     'BRAND_NAME': 'Privacy Compliance',
     'BRAND_TAGLINE': 'Continuous Data Protection Compliance',
     'PRIMARY_DOMAIN': 'mydatacompliance.domainname',
-    'SUPPORT_EMAIL': 'privacy@cocoatool.org',
+    'SUPPORT_EMAIL': 'privacy@privacy.domain',
     'PRIVATE_BETA': env('APP_PRIVATE_BETA'),
     'BILLING_ENABLED': env('APP_ENABLE_BILLING'),
     'LEGAL_DISCLAIMER': (
