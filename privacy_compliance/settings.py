@@ -39,6 +39,11 @@ env = environ.Env(
     DJANGO_SUPERUSER_EMAIL=(str, ''),
     DJANGO_SUPERUSER_PASSWORD=(str, ''),
     APP_PRIVATE_BETA=(bool, True),
+    # Master feature flag for any future billing/subscription UI.
+    # Defaults to False so nothing is ever shown unless an operator explicitly
+    # turns it on. Gates: nav entries, URL routes, and the liability clause
+    # in /terms/. Does NOT delete any code when flipped off — only hides.
+    APP_ENABLE_BILLING=(bool, False),
 )
 
 _env_file = BASE_DIR / '.env'
@@ -364,6 +369,7 @@ BRAND = {
     'PRIMARY_DOMAIN': 'mydataprotection.cocoatool.org',
     'SUPPORT_EMAIL': 'privacy@cocoatool.org',
     'PRIVATE_BETA': env('APP_PRIVATE_BETA'),
+    'BILLING_ENABLED': env('APP_ENABLE_BILLING'),
     'LEGAL_DISCLAIMER': (
         'This platform provides compliance management tooling. Content is '
         'informational and not legal advice; consult qualified counsel for '

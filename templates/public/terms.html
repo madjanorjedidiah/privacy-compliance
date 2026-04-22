@@ -27,7 +27,11 @@
 <p>We aim for high availability but do not guarantee uninterrupted Service. Planned maintenance is notified in advance where practicable.</p>
 
 <h2>7. Limitation of liability</h2>
+{% if BRAND.BILLING_ENABLED %}
 <p>To the fullest extent permitted by law, neither party is liable for indirect or consequential loss. Liability for direct loss is capped at the fees paid in the 12 months preceding the event giving rise to the claim.</p>
+{% else %}
+<p>The Service is made available free of charge, without warranty of any kind, express or implied. To the fullest extent permitted by law, the Service provider is not liable for indirect or consequential loss arising from your use of the Service. Direct loss is capped at the greater of (a) GHS 1,000 or (b) any amount a court deems non-excludable by law.</p>
+{% endif %}
 
 <h2>8. Termination</h2>
 <p>Either party may terminate for material breach on 30 days' written notice. Upon termination we will export your workspace data in a machine-readable format and delete it within 30 days, unless law requires us to retain it longer.</p>
