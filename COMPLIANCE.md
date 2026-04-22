@@ -1,11 +1,21 @@
 # Compliance Mapping
 
-How the **platform itself** (as opposed to the compliance workflows it runs
-for customers) meets the obligations of GDPR, Ghana DPA 2012 (Act 843),
-Kenya DPA 2019, Nigeria NDPA 2023, CCPA/CPRA, and ISO/IEC 27001 + 27701.
+How the **platform** (as deployed by **your organisation** — the
+deploying organisation is the Data Controller) meets the obligations of
+GDPR, Ghana DPA 2012 (Act 843), Kenya DPA 2019, Nigeria NDPA 2023,
+CCPA/CPRA, and ISO/IEC 27001 + 27701.
 
-> This document is an internal control map, not a warranty. It should be
-> reviewed with counsel before go-live and annually thereafter.
+> **Role allocation (important).** This is a self-hosted project. The
+> project maintainers ship the code; they are **not** your data
+> controller or processor and never touch your data. Whoever installs
+> and operates a copy of this software is the **Data Controller** for
+> the data their workspace holds, and must register and comply
+> accordingly. The controls below are the tooling available to help
+> that controller meet each obligation — the legal duty still rests
+> with the deploying organisation.
+
+> This document is a control map, not a warranty. It should be reviewed
+> with counsel before go-live and annually thereafter.
 
 ---
 
@@ -39,7 +49,7 @@ Kenya DPA 2019, Nigeria NDPA 2023, CCPA/CPRA, and ISO/IEC 27001 + 27701.
 
 | Obligation | Section | How met / operator action required |
 |---|---|---|
-| Registration as data controller | §§27-29 | **Operator action**: register the company that runs the deployed platform with the Ghana DPC before go-live. Renew annually. See `GO_LIVE.md`. |
+| Registration as data controller | §§27-29 | **Deploying organisation's duty**: the organisation installing and running this platform registers itself with the Ghana DPC before go-live and renews annually. See `GO_LIVE.md`. The project maintainers do not run a central service and therefore do not register. |
 | Apply the 8 principles | §17 | Written policy (this doc); technical controls enforce minimisation and retention. |
 | Obtain consent or lawful ground | §20 | Documented in `/privacy/`. |
 | Notice at collection | §24 | `/privacy/` page. |

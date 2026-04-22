@@ -1,7 +1,14 @@
-# Go-Live Checklist — mydataprotection.cocoatool.org
+# Go-Live Checklist — deploying-organisation's edition
 
-Work every item in this list before opening the platform to customers.
-Tick the box (Pull Request or commit) when closed.
+Work every item in this list before opening your instance of the platform
+to real users. Tick the box when closed.
+
+> **This checklist is for you — the organisation installing and running the
+> platform.** You are the Data Controller of your workspace. The project
+> maintainers ship the code and never see your data; they do not perform
+> these steps for you. If you later decide to run a shared multi-tenant
+> hosted instance for other organisations, revisit every item with counsel
+> — a hosted service has a higher regulatory bar than a self-hosted tool.
 
 ## 1. Legal & regulatory
 

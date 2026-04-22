@@ -1,11 +1,19 @@
-# Data Processing Agreement (DPA)
+# Data Processing Agreement (DPA) — template
 
-**Template — must be reviewed by qualified counsel before use.** This
-document is designed to sit as an annex to, or incorporated by reference
-into, your Master Services Agreement (MSA) with a paying customer. It
-covers Ghana DPA 2012, GDPR Art. 28, the Nigeria Data Protection Act
-2023, the Kenya Data Protection Act 2019, and the CCPA/CPRA service-
-provider contract requirements.
+**Context — please read first.** This project is free, open-source, and
+self-hosted. The project maintainers do **not** act as your processor;
+they never see your data. You do not need to sign a DPA with the
+maintainers.
+
+This template is provided for *your* use as a deploying organisation
+when **you** engage sub-processors (hosting providers, email services,
+monitoring vendors, etc.) who will in turn process the personal data
+held in your workspace. Fill in your own entity as the Controller and
+the vendor as the Processor. It covers Ghana DPA 2012, GDPR Art. 28,
+NDPA 2023, Kenya DPA 2019, and the CCPA/CPRA service-provider contract
+requirements.
+
+**Must be reviewed by qualified counsel before signature.**
 
 ---
 

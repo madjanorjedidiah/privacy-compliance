@@ -1,6 +1,25 @@
-# Privacy Compliance — Multi-Jurisdictional Data Protection Platform
+# Privacy Compliance — Free, Self-Hosted Data Protection Platform
 
-> Tell us what your business does; we tell you exactly which data-protection laws apply across Ghana, Kenya, Nigeria, USA and Europe — track readiness, score risk, generate policies.
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![tests](https://img.shields.io/badge/tests-71%2F71-brightgreen)]()
+[![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-Contributor%20Covenant%20v2.1-blue)](CODE_OF_CONDUCT.md)
+
+> **A free, open-source, self-hosted compliance platform.** Tell it what
+> your business does; it tells you exactly which data-protection laws apply
+> across Ghana, Kenya, Nigeria, USA, and Europe — track readiness, score
+> risk, generate policies, prove accountability.
+
+This project is a gift to SMEs and NGOs that need to comply with data-
+protection law but cannot afford commercial compliance suites. There is
+no SaaS. There is no paid tier. You deploy it on your own infrastructure
+(or a free-tier VPS); you become the data controller for your workspace;
+the project maintainers never see your data.
+
+- **Licence:** [AGPL-3.0-or-later](LICENSE) — free to use, modify, and
+  redistribute. If you run a modified version as a network service, you
+  must share your changes with your users. That is the deal.
+- **Contributing:** see [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Security:** disclose privately per [SECURITY.md](SECURITY.md).
 
 ## What it does
 

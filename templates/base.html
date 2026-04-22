@@ -31,9 +31,11 @@
 <body class="antialiased">
   {% if BRAND.PRIVATE_BETA %}
   <div class="bg-amber-500 text-amber-950 text-center text-xs font-semibold py-1.5 px-3 border-b border-amber-600">
-    🚧 Private beta — this instance is for internal use and demonstration only.
-    Do not upload the personal data of real individuals until the operating
-    entity has completed its Data Protection Commission registration.
+    🚧 Community project — self-hosted instance. The organisation running
+    this copy is the Data Controller and is responsible for its own
+    regulator registration (e.g. Ghana DPC) before processing real
+    personal data. Set APP_PRIVATE_BETA=0 once that is in place to hide
+    this banner.
   </div>
   {% endif %}
   {% block body %}
