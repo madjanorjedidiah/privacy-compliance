@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Vendors & processors{% endblock %}
+{% block topbar_eyebrow %}Third parties{% endblock %}
+{% block topbar_title %}Vendors & processors{% endblock %}
+{% block topbar_actions %}<a href="{% url 'vendors:create' %}" class="btn btn-primary">+ Add vendor</a>{% endblock %}
+
+{% block content %}
+<p class="text-sm text-slate-500 mb-4 max-w-3xl">Track sub-processors, DPA status, transfer mechanisms, and audit cadence. Red rows flag DPAs that are expired or expiring in the next 60 days.</p>
+
+<div class="card overflow-x-auto">
+  <table class="table-sentinel">
+    <thead>
+      <tr><th>Vendor</th><th>Role</th><th>Country</th><th>Risk tier</th><th>DPA</th><th>Transfer</th><th>Next audit</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for v in vendors %}
+        <tr class="{% if v.dpa_expired %}bg-rose-50{% elif v.dpa_expiring_soon %}bg-amber-50{% endif %}">
+          <td>
+            <span class="font-medium text-slate-900">{{ v.name }}</span>
+            {% if v.website %}<p class="text-xs text-slate-500"><a href="{{ v.website }}" class="hover:underline">{{ v.website }}</a></p>{% endif %}
+          </td>
+          <td class="text-xs">{{ v.get_role_display }}</td>
+          <td class="text-xs">{{ v.country }}</td>
+          <td class="text-xs"><span class="badge
+            {% if v.risk_tier == 'critical' %}badge-danger
+            {% elif v.risk_tier == 'high' %}badge-warn
+            {% elif v.risk_tier == 'medium' %}badge-info
+            {% else %}badge-muted{% endif %}">{{ v.get_risk_tier_display|truncatechars:30 }}</span>
+          </td>
+          <td class="text-xs">
+            {% if v.dpa_on_file %}
+              {% if v.dpa_expires_on %}Expires {{ v.dpa_expires_on|date:"d M Y" }}{% if v.dpa_expired %} <span class="badge badge-danger">Expired</span>{% elif v.dpa_expiring_soon %} <span class="badge badge-warn">Soon</span>{% endif %}{% else %}Signed{% endif %}
+            {% else %}
+              <span class="badge badge-danger">Missing</span>
+            {% endif %}
+          </td>
+          <td class="text-xs">{{ v.get_transfer_mechanism_display|default:"—" }}{% if v.tia_completed %} ✓{% endif %}</td>
+          <td class="text-xs">{{ v.next_security_audit|date:"d M Y"|default:"—" }}</td>
+          <td class="text-right"><a href="{% url 'vendors:edit' v.pk %}" class="text-brand-700 font-semibold text-xs">Edit →</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="text-center text-slate-500 py-8">No vendors yet. <a href="{% url 'vendors:create' %}" class="text-brand-700 font-semibold">Add the first →</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,10 +1,9 @@
-from datetime import timedelta
-
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 from core.choices import IncidentSeverity
+from core.deadlines import incident_deadline
 from core.models import OrgScopedModel
 
 
@@ -33,7 +32,9 @@ class Incident(OrgScopedModel):
 
     def save(self, *args, **kwargs):
         if not self.regulator_deadline:
-            self.regulator_deadline = self.detected_at + timedelta(hours=72)
+            self.regulator_deadline = incident_deadline(
+                self.detected_at, self.affected_jurisdictions or None
+            )
         super().save(*args, **kwargs)
 
     @property

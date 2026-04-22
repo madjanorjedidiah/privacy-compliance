@@ -9,7 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential curl \
+    && apt-get install -y --no-install-recommends build-essential curl wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
@@ -21,15 +21,14 @@ RUN useradd --create-home --shell /bin/bash sentinel \
     && chown -R sentinel:sentinel /app
 USER sentinel
 
-ENV DJANGO_DEBUG=0 \
-    DJANGO_ALLOWED_HOSTS=* \
-    SENTINEL_SECRET_KEY=please-set-in-runtime \
+ENV DJANGO_ENV=prod \
+    DJANGO_DEBUG=0 \
     PORT=8000
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -fsS "http://127.0.0.1:${PORT}/accounts/login/" >/dev/null || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD wget -qO- "http://127.0.0.1:${PORT}/ops/health/" >/dev/null || exit 1
 
 ENTRYPOINT ["/app/scripts/entrypoint.sh"]
 CMD ["gunicorn", "sentinel.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", "-"]

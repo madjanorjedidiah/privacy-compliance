@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}ROPA{% endblock %}
+{% block topbar_eyebrow %}Records{% endblock %}
+{% block topbar_title %}Record of Processing Activities{% endblock %}
+{% block topbar_actions %}<a href="{% url 'ropa:create' %}" class="btn btn-primary">+ Add processing activity</a>{% endblock %}
+
+{% block content %}
+<p class="text-sm text-slate-500 mb-4 max-w-3xl">Structured Article 30 GDPR / NDPA §29 / Kenya DPA §25 register. Regulators can request this at short notice — keep it current.</p>
+
+<div class="card overflow-x-auto">
+  <table class="table-sentinel">
+    <thead>
+      <tr><th>Activity</th><th>Role</th><th>Lawful basis</th><th>Categories</th><th>Transfers</th><th>Retention</th><th>Owner</th><th>Next review</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for a in activities %}
+        <tr>
+          <td>
+            <a href="{% url 'ropa:detail' a.pk %}" class="font-medium text-slate-900 hover:text-brand-700">{{ a.name }}</a>
+            {% if a.description %}<p class="text-xs text-slate-500">{{ a.description|truncatechars:80 }}</p>{% endif %}
+          </td>
+          <td><span class="badge badge-muted">{{ a.get_role_display }}</span></td>
+          <td class="text-xs">{{ a.get_lawful_basis_display }}</td>
+          <td class="text-xs">{{ a.data_categories|join:", "|truncatechars:40 }}</td>
+          <td class="text-xs">{% if a.cross_border_transfers %}{{ a.transfer_countries|join:", " }} ({{ a.get_transfer_mechanism_display }}){% else %}—{% endif %}</td>
+          <td class="text-xs">{% if a.retention_schedule %}{{ a.retention_schedule.name }}{% else %}{{ a.retention_note|default:"—" }}{% endif %}</td>
+          <td class="text-xs">{% if a.owner %}{{ a.owner.friendly_name }}{% else %}—{% endif %}</td>
+          <td class="text-xs">{{ a.next_review|date:"d M Y"|default:"—" }}</td>
+          <td class="text-right"><a href="{% url 'ropa:edit' a.pk %}" class="text-brand-700 font-semibold text-xs">Edit →</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9" class="text-center text-slate-500 py-8">No processing activities yet. <a href="{% url 'ropa:create' %}" class="text-brand-700 font-semibold">Add the first →</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

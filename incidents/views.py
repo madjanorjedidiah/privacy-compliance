@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from accounts.permissions import write_required
+
 from .models import Incident
 
 
@@ -29,7 +31,7 @@ def incidents_list(request):
     return render(request, 'incidents/list.html', {'incidents': qs})
 
 
-@login_required
+@write_required
 def incident_create(request):
     org = request.active_org
     form = IncidentForm(request.POST or None)
@@ -45,10 +47,14 @@ def incident_create(request):
 
 @login_required
 def incident_detail(request, pk):
+    from accounts.permissions import can_write
+    from django.core.exceptions import PermissionDenied
     org = request.active_org
     inc = get_object_or_404(Incident, pk=pk, organization=org)
     form = IncidentForm(request.POST or None, instance=inc)
     if request.method == 'POST':
+        if not can_write(request):
+            raise PermissionDenied('Your role does not permit editing.')
         action = request.POST.get('action')
         if action == 'mark_notified':
             inc.regulator_notified_at = timezone.now()

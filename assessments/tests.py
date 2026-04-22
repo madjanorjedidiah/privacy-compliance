@@ -39,12 +39,37 @@ class AssessmentFlowTests(TestCase):
     def test_controls_created_for_applicable_requirements(self):
         org = self._setup_org()
         assessment = run_assessment(org)
-        created = sync_controls_from_assessment(org, assessment)
-        self.assertGreater(created, 0)
-        self.assertEqual(created, Control.objects.filter(organization=org).count())
+        result = sync_controls_from_assessment(org, assessment)
+        self.assertGreater(result['created'], 0)
+        self.assertEqual(result['created'], Control.objects.filter(organization=org).count())
 
     def test_ccpa_opt_out_not_created_when_no_california(self):
         org = self._setup_org(offers_to_california_residents=False)
         assessment = run_assessment(org)
         sync_controls_from_assessment(org, assessment)
         self.assertFalse(Control.objects.filter(organization=org, requirement__code='CCPA-OptOut').exists())
+
+    def test_stale_controls_deprecated_when_applicability_shrinks(self):
+        from core.choices import ControlStatus
+        org = self._setup_org()
+        a1 = run_assessment(org)
+        sync_controls_from_assessment(org, a1)
+        before = Control.objects.filter(organization=org).count()
+        self.assertGreater(before, 0)
+
+        # User narrows profile: drop EU subjects and California
+        org.profile.data_subject_locations = ['GH']
+        org.profile.offers_to_california_residents = False
+        org.profile.save()
+
+        # Record progress on one control so it doesn't get deleted silently
+        ctrl = Control.objects.filter(organization=org).first()
+        ctrl.status = ControlStatus.IN_PROGRESS
+        ctrl.notes = 'Draft published'
+        ctrl.save()
+
+        a2 = run_assessment(org)
+        result = sync_controls_from_assessment(org, a2)
+        self.assertGreater(result['removed'] + result['deprecated'], 0)
+        # The touched control must still exist but should never be deleted.
+        self.assertTrue(Control.objects.filter(pk=ctrl.pk).exists())

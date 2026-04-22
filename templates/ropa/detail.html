@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}{{ activity.name }}{% endblock %}
+{% block topbar_eyebrow %}ROPA{% endblock %}
+{% block topbar_title %}{{ activity.name }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'ropa:list' %}" class="btn btn-outline">← All activities</a>
+  <a href="{% url 'ropa:edit' activity.pk %}" class="btn btn-primary">Edit</a>
+{% endblock %}
+
+{% block content %}
+<div class="card p-6 max-w-4xl">
+  <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Role</dt><dd>{{ activity.get_role_display }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Owner</dt><dd>{% if activity.owner %}{{ activity.owner.friendly_name }}{% else %}—{% endif %}</dd></div>
+    <div class="md:col-span-2"><dt class="text-xs uppercase tracking-widest text-slate-500">Description</dt><dd class="mt-1">{{ activity.description|default:"—"|linebreaksbr }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Lawful basis</dt><dd>{{ activity.get_lawful_basis_display }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Special category basis</dt><dd>{{ activity.get_special_category_basis_display }}</dd></div>
+    <div class="md:col-span-2"><dt class="text-xs uppercase tracking-widest text-slate-500">Lawful basis note</dt><dd class="mt-1">{{ activity.lawful_basis_note|default:"—"|linebreaksbr }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Purposes</dt><dd>{{ activity.purposes|join:", "|default:"—" }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Data categories</dt><dd>{{ activity.data_categories|join:", "|default:"—" }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Subject categories</dt><dd>{{ activity.data_subject_categories|join:", "|default:"—" }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Recipients</dt><dd>{{ activity.recipients|join:", "|default:"—" }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Systems</dt><dd>{{ activity.internal_systems|join:", "|default:"—" }}</dd></div>
+    <div>
+      <dt class="text-xs uppercase tracking-widest text-slate-500">Transfers</dt>
+      <dd>{% if activity.cross_border_transfers %}{{ activity.transfer_countries|join:", " }} via {{ activity.get_transfer_mechanism_display }}{% else %}No cross-border transfers{% endif %}</dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-widest text-slate-500">Retention</dt>
+      <dd>{% if activity.retention_schedule %}{{ activity.retention_schedule.name }} ({{ activity.retention_schedule.retention_months }} mo){% else %}{{ activity.retention_note|default:"—" }}{% endif %}</dd>
+    </div>
+    <div class="md:col-span-2"><dt class="text-xs uppercase tracking-widest text-slate-500">Security measures</dt><dd class="mt-1">{{ activity.security_measures|default:"—"|linebreaksbr }}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">DPIA required</dt><dd>{% if activity.dpia_required %}Yes{% if activity.dpia %} — <a class="text-brand-700 font-semibold" href="{% url 'dpia:detail' activity.dpia.pk %}">View DPIA</a>{% endif %}{% else %}No{% endif %}</dd></div>
+    <div><dt class="text-xs uppercase tracking-widest text-slate-500">Next review</dt><dd>{{ activity.next_review|date:"d M Y"|default:"—" }}</dd></div>
+  </dl>
+</div>
+{% endblock %}

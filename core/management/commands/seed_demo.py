@@ -29,12 +29,18 @@ class Command(BaseCommand):
                 'is_superuser': True,
             },
         )
-        if user_created:
+        # Always reset the demo password so re-running this command gives a
+        # known-good login; if you don't want this, skip with SEED_SKIP_PW=1.
+        import os
+        if not os.environ.get('SEED_SKIP_PW'):
             user.set_password('demodemo123!')
+            user.is_staff = True
+            user.is_superuser = True
             user.save()
-            self.stdout.write(self.style.SUCCESS('Created user demo / demodemo123!'))
+            state = 'Created' if user_created else 'Refreshed'
+            self.stdout.write(self.style.SUCCESS(f'{state} user demo / demodemo123!'))
         else:
-            self.stdout.write('User demo already present.')
+            self.stdout.write('SEED_SKIP_PW set — leaving demo password unchanged.')
 
         org, _ = Organization.objects.get_or_create(
             slug='kudu-fintech',
@@ -80,9 +86,10 @@ class Command(BaseCommand):
         org.save()
 
         assessment = run_assessment(org, user=user, name='Initial assessment (demo)')
-        created = sync_controls_from_assessment(org, assessment)
+        result = sync_controls_from_assessment(org, assessment)
         self.stdout.write(self.style.SUCCESS(
-            f'Assessment {assessment.pk} and {created} controls provisioned at 0% (all "not started").'
+            f'Assessment {assessment.pk} created. Controls: {result["created"]} new, '
+            f'{result["deprecated"]} deprecated, {result["removed"]} removed.'
         ))
 
         Risk.objects.create(

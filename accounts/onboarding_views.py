@@ -60,12 +60,15 @@ def review(request):
 
     if request.method == 'POST':
         assessment = run_assessment(org, user=request.user, name='Initial applicability assessment')
-        sync_controls_from_assessment(org, assessment)
+        result = sync_controls_from_assessment(org, assessment)
         from django.utils import timezone
         org.onboarded_at = timezone.now()
         org.save(update_fields=['onboarded_at'])
-        messages.success(request, 'Applicable frameworks and controls are now on your dashboard.')
-        return redirect('dashboard:home')
+        msg = f'Applicable frameworks scoped. {result["created"]} controls ready to action.'
+        if result['deprecated'] or result['removed']:
+            msg += f' ({result["deprecated"]} deprecated, {result["removed"]} removed.)'
+        messages.success(request, msg)
+        return redirect('compliance:home')
 
     return render(request, 'onboarding/review.html', {
         'preview': preview, 'profile': profile_obj,

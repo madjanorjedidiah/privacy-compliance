@@ -1,0 +1,12 @@
+{# Internal ring SVG. Requires: size, score, ring (stroke class), text (text colour class) #}
+<div class="relative shrink-0" style="width: {{ size }}px; height: {{ size }}px">
+  <svg viewBox="0 0 36 36" class="w-full h-full -rotate-90" aria-hidden="true">
+    <circle cx="18" cy="18" r="15.9155" class="fill-none stroke-slate-100" stroke-width="3"></circle>
+    <circle cx="18" cy="18" r="15.9155" class="fill-none {{ ring }}" stroke-width="3"
+            stroke-dasharray="{{ score }},100" stroke-linecap="round"></circle>
+  </svg>
+  <div class="absolute inset-0 flex flex-col items-center justify-center {{ text }}">
+    <span class="text-xl font-extrabold">{{ score }}</span>
+    <span class="text-[10px] uppercase tracking-widest">/100</span>
+  </div>
+</div>

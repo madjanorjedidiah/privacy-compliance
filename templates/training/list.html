@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Training register{% endblock %}
+{% block topbar_eyebrow %}People{% endblock %}
+{% block topbar_title %}Data protection training register{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'training:module_create' %}" class="btn btn-outline">+ Module</a>
+  <a href="{% url 'training:record_create' %}" class="btn btn-primary">+ Record completion</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  <div class="card p-5">
+    <h3 class="font-semibold mb-3">Modules</h3>
+    <ul class="divide-y divide-slate-100">
+      {% for m in modules %}
+        <li class="py-3">
+          <p class="font-medium">{{ m.name }}{% if m.mandatory %} <span class="badge badge-danger">Mandatory</span>{% endif %}</p>
+          {% if m.description %}<p class="text-xs text-slate-500 mt-0.5">{{ m.description }}</p>{% endif %}
+          <p class="text-xs text-slate-500 mt-1">Refresh every {{ m.required_months }} months{% if m.audience_note %} · {{ m.audience_note }}{% endif %}</p>
+        </li>
+      {% empty %}
+        <li class="py-4 text-sm text-slate-500">No modules defined yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card p-5">
+    <h3 class="font-semibold mb-3">Recent completions</h3>
+    <table class="table-sentinel">
+      <thead><tr><th>User</th><th>Module</th><th>Completed</th><th>Expires</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in records %}
+          <tr>
+            <td class="text-sm">{{ r.user.friendly_name }}</td>
+            <td class="text-xs">{{ r.module.name }}</td>
+            <td class="text-xs">{{ r.completed_on|date:"d M Y" }}</td>
+            <td class="text-xs">{{ r.expires_on|date:"d M Y"|default:"—" }}</td>
+            <td>{% if r.is_expired %}<span class="badge badge-danger">Expired</span>{% else %}<span class="badge badge-ok">Valid</span>{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-center text-slate-500 py-4">No completions recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

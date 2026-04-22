@@ -1,15 +1,25 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView as DjangoLoginView, LogoutView as DjangoLogoutView
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 
 from .forms import SignupForm
 from .models import Membership, Organization, OrgProfile
 
 
 def signup(request):
+    if request.method == 'POST':
+        from django_ratelimit.core import is_ratelimited
+        if is_ratelimited(
+            request, group='signup', key='ip',
+            rate=settings.SENTINEL_RATE_LIMIT_SIGNUP, method='POST', increment=True,
+        ):
+            return render(request, 'accounts/rate_limited.html', status=429)
     if request.user.is_authenticated:
         return redirect('dashboard:home')
     if request.method == 'POST':
@@ -40,6 +50,15 @@ def signup(request):
 
 class LoginView(DjangoLoginView):
     template_name = 'accounts/login.html'
+
+    def post(self, request, *args, **kwargs):
+        from django_ratelimit.core import is_ratelimited
+        if is_ratelimited(
+            request, group='login', key='ip',
+            rate=settings.SENTINEL_RATE_LIMIT_LOGIN, method='POST', increment=True,
+        ):
+            return render(request, 'accounts/rate_limited.html', status=429)
+        return super().post(request, *args, **kwargs)
 
 
 class LogoutView(DjangoLogoutView):

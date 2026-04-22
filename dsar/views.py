@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from accounts.permissions import write_required
 from core.choices import DSARType
 
 from .models import DSARRequest
@@ -24,7 +25,7 @@ def dsar_list(request):
     return render(request, 'dsar/list.html', {'dsars': qs})
 
 
-@login_required
+@write_required
 def dsar_create(request):
     org = request.active_org
     form = DSARForm(request.POST or None)
@@ -39,10 +40,14 @@ def dsar_create(request):
 
 @login_required
 def dsar_detail(request, pk):
+    from accounts.permissions import can_write
+    from django.core.exceptions import PermissionDenied
     org = request.active_org
     req = get_object_or_404(DSARRequest, pk=pk, organization=org)
     form = DSARForm(request.POST or None, instance=req)
     if request.method == 'POST':
+        if not can_write(request):
+            raise PermissionDenied('Your role does not permit editing.')
         action = request.POST.get('action')
         if action == 'close':
             req.status = DSARRequest.Status.CLOSED

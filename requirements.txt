@@ -5,3 +5,7 @@ whitenoise>=6.6
 dj-database-url>=2.2
 psycopg[binary]>=3.2
 gunicorn>=22.0
+django-environ>=0.11
+django-redis>=5.4
+redis>=5.0
+django-ratelimit>=4.1

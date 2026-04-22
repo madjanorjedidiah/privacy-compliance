@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from accounts.permissions import write_required
+
 from .engine import generate_document, render_template
 from .models import GeneratedDocument, TemplateDefinition
 
@@ -58,7 +60,7 @@ def template_preview(request, pk):
     })
 
 
-@login_required
+@write_required
 def template_generate(request, pk):
     org = request.active_org
     tmpl = get_object_or_404(TemplateDefinition, pk=pk)

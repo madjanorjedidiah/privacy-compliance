@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from accounts.permissions import write_required
 from core.choices import ControlStatus
 
 from .models import Control, Evidence
@@ -57,12 +58,16 @@ def controls_list(request):
 
 @login_required
 def control_detail(request, pk):
+    from accounts.permissions import can_write
     org = request.active_org
     control = get_object_or_404(Control, pk=pk, organization=org)
     form = ControlForm(request.POST or None, instance=control)
     evidence_form = EvidenceForm(request.POST or None, request.FILES or None)
 
     if request.method == 'POST':
+        if not can_write(request):
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied('Your role does not permit editing.')
         action = request.POST.get('action')
         if action == 'update_control' and form.is_valid():
             obj = form.save(commit=False)
@@ -85,7 +90,7 @@ def control_detail(request, pk):
     })
 
 
-@login_required
+@write_required
 def control_quick_status(request, pk):
     org = request.active_org
     control = get_object_or_404(Control, pk=pk, organization=org)

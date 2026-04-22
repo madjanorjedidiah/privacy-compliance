@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Retention schedule{% endblock %}
+{% block topbar_eyebrow %}Records{% endblock %}
+{% block topbar_title %}Retention schedule{% endblock %}
+{% block topbar_actions %}<a href="{% url 'retention:create' %}" class="btn btn-primary">+ Add policy</a>{% endblock %}
+
+{% block content %}
+<p class="text-sm text-slate-500 mb-4 max-w-3xl">Data category × retention period × legal basis. Auditors ask for this first.</p>
+
+<div class="card overflow-x-auto">
+  <table class="table-sentinel">
+    <thead>
+      <tr><th>Policy</th><th>Data category</th><th>Retention</th><th>Trigger</th><th>Legal basis</th><th>Destruction</th><th>Owner</th><th>Review</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for p in policies %}
+        <tr>
+          <td>
+            <span class="font-medium text-slate-900">{{ p.name }}</span>
+            {% if p.legal_hold %}<span class="badge badge-danger ml-2">⚠ Legal hold</span>{% endif %}
+            {% if p.description %}<p class="text-xs text-slate-500 mt-0.5">{{ p.description|truncatechars:80 }}</p>{% endif %}
+          </td>
+          <td class="text-xs">{{ p.get_data_category_display }}</td>
+          <td class="text-xs font-semibold">{{ p.retention_months }} mo</td>
+          <td class="text-xs">{{ p.get_trigger_display }}</td>
+          <td class="text-xs">{{ p.legal_basis|default:"—" }}</td>
+          <td class="text-xs">{{ p.get_destruction_method_display }}</td>
+          <td class="text-xs">{% if p.owner %}{{ p.owner.friendly_name }}{% else %}—{% endif %}</td>
+          <td class="text-xs">{{ p.next_review|date:"d M Y"|default:"—" }}</td>
+          <td class="text-right"><a href="{% url 'retention:edit' p.pk %}" class="text-brand-700 font-semibold text-xs">Edit →</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9" class="text-center text-slate-500 py-8">No retention policies yet. <a href="{% url 'retention:create' %}" class="text-brand-700 font-semibold">Add the first →</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

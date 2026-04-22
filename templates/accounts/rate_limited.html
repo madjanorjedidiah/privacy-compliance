@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Too many requests{% endblock %}
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+  <div class="max-w-md w-full card p-8 text-center">
+    <h1 class="text-2xl font-bold mb-2">Slow down.</h1>
+    <p class="text-slate-600">You've made too many attempts in a short window. Please wait a minute and try again.</p>
+    <a class="btn btn-outline mt-5" href="/">Home</a>
+  </div>
+</div>
+{% endblock %}

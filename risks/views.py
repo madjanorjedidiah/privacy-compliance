@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
+from accounts.permissions import write_required
+
 from .models import Risk
 
 
@@ -40,7 +42,7 @@ def risks_list(request):
     })
 
 
-@login_required
+@write_required
 def risk_create(request):
     org = request.active_org
     if not org:
@@ -56,7 +58,7 @@ def risk_create(request):
     return render(request, 'risks/form.html', {'form': form, 'title': 'Add risk'})
 
 
-@login_required
+@write_required
 def risk_edit(request, pk):
     org = request.active_org
     risk = get_object_or_404(Risk, pk=pk, organization=org)

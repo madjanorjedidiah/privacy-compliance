@@ -10,23 +10,18 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from accounts.permissions import write_required
 from assessments.models import RequirementApplicability
 from assessments.services import latest_assessment
 from core.choices import ControlStatus
+from core.constants import COMPLIANCE_STATUS_ORDER
 from dashboard.services import (
     jurisdiction_scorecard,
     weighted_maturity,
 )
 from jurisdictions.models import Jurisdiction, RequirementCategory
 
-from .models import Control
-
-
-STATUS_ORDER = [
-    ControlStatus.NOT_STARTED,
-    ControlStatus.IN_PROGRESS,
-    ControlStatus.IMPLEMENTED,
-]
+from .models import Control, ControlStatusChange
 
 
 @login_required
@@ -117,7 +112,7 @@ def compliance_jurisdiction(request, code):
     })
 
 
-@login_required
+@write_required
 def compliance_advance(request, control_id):
     """Advance a control to the next state (Not started → In progress → Implemented)."""
     if request.method != 'POST':
@@ -125,12 +120,13 @@ def compliance_advance(request, control_id):
     org = request.active_org
     control = get_object_or_404(Control, pk=control_id, organization=org)
     direction = request.POST.get('to')
+    previous_status = control.status
     if direction in [s for s, _ in ControlStatus.choices]:
         control.status = direction
     else:
         try:
-            idx = STATUS_ORDER.index(control.status)
-            control.status = STATUS_ORDER[(idx + 1) % len(STATUS_ORDER)]
+            idx = COMPLIANCE_STATUS_ORDER.index(control.status)
+            control.status = COMPLIANCE_STATUS_ORDER[(idx + 1) % len(COMPLIANCE_STATUS_ORDER)]
         except ValueError:
             control.status = ControlStatus.IN_PROGRESS
     if control.is_done and not control.completed_at:
@@ -138,6 +134,15 @@ def compliance_advance(request, control_id):
     elif not control.is_done:
         control.completed_at = None
     control.save()
+
+    if previous_status != control.status:
+        ControlStatusChange.objects.create(
+            control=control,
+            from_status=previous_status,
+            to_status=control.status,
+            changed_by=request.user,
+        )
+
     messages.success(request, f'{control.requirement.code} → {control.get_status_display()}')
     return redirect(
         'compliance:jurisdiction',

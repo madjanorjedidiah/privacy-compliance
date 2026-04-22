@@ -5,6 +5,10 @@ from core.choices import RiskLevel, Severity
 from core.models import OrgScopedModel
 
 
+def _scoring_config():
+    return settings.SENTINEL['RISK_SCORING']
+
+
 class Risk(OrgScopedModel):
     class Treatment(models.TextChoices):
         ACCEPT = 'accept', 'Accept'
@@ -54,28 +58,39 @@ class Risk(OrgScopedModel):
         return self.title
 
     def compute_scores(self):
-        """Compute inherent and residual risk scores and severity label."""
+        """Compute inherent and residual risk scores and severity label.
+
+        Weights are read from settings.SENTINEL['RISK_SCORING'] so operators
+        can tune sensitivity without touching model code.
+        """
+        cfg = _scoring_config()
         inherent = (self.likelihood or 1) * (self.impact or 1)  # 1..25
 
         sensitivity_bonus = max(0, (self.data_sensitivity or 1) - 2)  # 0..3
         volume_bonus = max(0, (self.data_volume_log10 or 0) - 3) / 2  # 0..1.5
         regulator_bonus = max(0, (self.regulator_activity or 1) - 2) / 2  # 0..1.5
 
-        modified = inherent * (1 + sensitivity_bonus * 0.15 + volume_bonus * 0.1 + regulator_bonus * 0.1)
+        modified = inherent * (
+            1
+            + sensitivity_bonus * cfg['SENSITIVITY_BONUS_PER_STEP']
+            + volume_bonus * cfg['VOLUME_BONUS_PER_STEP']
+            + regulator_bonus * cfg['REGULATOR_BONUS_PER_STEP']
+        )
 
         effectiveness = max(0, min(100, self.control_effectiveness or 0))
-        residual = modified * (1 - effectiveness / 100 * 0.8)
+        residual = modified * (1 - effectiveness / 100 * cfg['CONTROL_EFFECTIVENESS_MAX_REDUCTION'])
 
         self.inherent_score = round(modified)
         self.residual_score = round(residual)
 
-        if residual >= 20:
+        t = cfg['SEVERITY_THRESHOLDS']
+        if residual >= t['CRITICAL']:
             self.severity = Severity.CRITICAL
-        elif residual >= 14:
+        elif residual >= t['HIGH']:
             self.severity = Severity.HIGH
-        elif residual >= 8:
+        elif residual >= t['MEDIUM']:
             self.severity = Severity.MEDIUM
-        elif residual >= 4:
+        elif residual >= t['LOW']:
             self.severity = Severity.LOW
         else:
             self.severity = Severity.INFO

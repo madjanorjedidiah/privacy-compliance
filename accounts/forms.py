@@ -2,26 +2,9 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
 from core.choices import DataCategory, ProcessingPurpose, Sector, TransferMechanism
+from core.constants import COUNTRY_CHOICES
 
 from .models import Organization, OrgProfile, User
-
-
-COUNTRY_CHOICES = [
-    ('GH', '🇬🇭 Ghana'),
-    ('KE', '🇰🇪 Kenya'),
-    ('NG', '🇳🇬 Nigeria'),
-    ('US', '🇺🇸 United States'),
-    ('US-CA', '🇺🇸 California (USA)'),
-    ('GB', '🇬🇧 United Kingdom'),
-    ('DE', '🇩🇪 Germany'),
-    ('FR', '🇫🇷 France'),
-    ('IE', '🇮🇪 Ireland'),
-    ('NL', '🇳🇱 Netherlands'),
-    ('ES', '🇪🇸 Spain'),
-    ('IT', '🇮🇹 Italy'),
-    ('ZA', '🇿🇦 South Africa'),
-    ('CA', '🇨🇦 Canada'),
-]
 
 
 class SignupForm(UserCreationForm):

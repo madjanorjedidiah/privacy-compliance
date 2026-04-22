@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ dpia.title }}{% endblock %}
+{% block topbar_eyebrow %}DPIA{% endblock %}
+{% block topbar_title %}{{ dpia.title }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'dpia:list' %}" class="btn btn-outline">← Back</a>
+  <a href="{% url 'dpia:edit' dpia.pk %}" class="btn btn-primary">Edit</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+  <div class="card p-6 lg:col-span-2">
+    <p class="text-sm text-slate-500">{{ dpia.description|linebreaksbr|default:"No description yet." }}</p>
+
+    <h3 class="mt-5 text-sm uppercase tracking-widest text-slate-500">Trigger screen ({{ dpia.triggers_fired }}/9)</h3>
+    <ul class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+      <li>{% if dpia.trigger_automated_decisions %}✅{% else %}◯{% endif %} Automated decision-making with legal effect</li>
+      <li>{% if dpia.trigger_large_scale_special %}✅{% else %}◯{% endif %} Large-scale special category data</li>
+      <li>{% if dpia.trigger_systematic_monitoring %}✅{% else %}◯{% endif %} Systematic monitoring of public area</li>
+      <li>{% if dpia.trigger_sensitive_combined %}✅{% else %}◯{% endif %} Combining datasets</li>
+      <li>{% if dpia.trigger_new_technology %}✅{% else %}◯{% endif %} Use of new technology</li>
+      <li>{% if dpia.trigger_children %}✅{% else %}◯{% endif %} Processing children's data</li>
+      <li>{% if dpia.trigger_vulnerable_subjects %}✅{% else %}◯{% endif %} Vulnerable data subjects</li>
+      <li>{% if dpia.trigger_data_matching %}✅{% else %}◯{% endif %} Data matching / profiling</li>
+      <li>{% if dpia.trigger_denies_service %}✅{% else %}◯{% endif %} Denies service / opportunity</li>
+    </ul>
+    <p class="mt-3 text-sm">
+      {% if dpia.is_dpia_required %}
+        <span class="badge badge-danger">DPIA required</span> Two or more triggers fired — document the full assessment.
+      {% else %}
+        <span class="badge badge-ok">Likely not mandatory</span> Still best practice if any residual risk is elevated.
+      {% endif %}
+    </p>
+
+    <h3 class="mt-6 text-sm uppercase tracking-widest text-slate-500">Risk</h3>
+    <div class="grid grid-cols-2 gap-4 mt-2">
+      <div class="p-4 rounded bg-rose-50 border border-rose-200">
+        <p class="text-xs uppercase tracking-widest text-rose-700">Inherent</p>
+        <p class="text-2xl font-bold text-rose-700">{{ dpia.inherent_score }}</p>
+        <p class="text-xs text-rose-600">L{{ dpia.inherent_likelihood }} × I{{ dpia.inherent_impact }}</p>
+      </div>
+      <div class="p-4 rounded bg-emerald-50 border border-emerald-200">
+        <p class="text-xs uppercase tracking-widest text-emerald-700">Residual</p>
+        <p class="text-2xl font-bold text-emerald-700">{{ dpia.residual_score }}</p>
+        <p class="text-xs text-emerald-600">L{{ dpia.residual_likelihood }} × I{{ dpia.residual_impact }}</p>
+      </div>
+    </div>
+
+    {% if dpia.mitigations %}
+      <h3 class="mt-6 text-sm uppercase tracking-widest text-slate-500">Mitigations</h3>
+      <p class="mt-1 text-slate-700">{{ dpia.mitigations|linebreaksbr }}</p>
+    {% endif %}
+    {% if dpia.consultation_summary %}
+      <h3 class="mt-4 text-sm uppercase tracking-widest text-slate-500">Consultation</h3>
+      <p class="mt-1 text-slate-700">{{ dpia.consultation_summary|linebreaksbr }}</p>
+    {% endif %}
+    {% if dpia.decision_note %}
+      <h3 class="mt-4 text-sm uppercase tracking-widest text-slate-500">Decision</h3>
+      <p class="mt-1 text-slate-700">{{ dpia.decision_note|linebreaksbr }}</p>
+    {% endif %}
+  </div>
+
+  <div class="card p-5 text-sm space-y-2">
+    <p><span class="text-slate-500">Status:</span> <span class="badge badge-info">{{ dpia.get_status_display }}</span></p>
+    <p><span class="text-slate-500">Outcome:</span> {{ dpia.get_outcome_display|default:"—" }}</p>
+    <p><span class="text-slate-500">DPO:</span> {% if dpia.dpo %}{{ dpia.dpo.friendly_name }}{% else %}—{% endif %}</p>
+    <p><span class="text-slate-500">Business owner:</span> {% if dpia.business_owner %}{{ dpia.business_owner.friendly_name }}{% else %}—{% endif %}</p>
+    <p><span class="text-slate-500">Approved at:</span> {{ dpia.approved_at|date:"d M Y"|default:"—" }}</p>
+    <p><span class="text-slate-500">Next review:</span> {{ dpia.next_review|date:"d M Y"|default:"—" }}</p>
+  </div>
+</div>
+{% endblock %}

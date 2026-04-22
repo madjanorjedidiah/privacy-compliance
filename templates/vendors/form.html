@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block topbar_eyebrow %}Vendors{% endblock %}
+{% block topbar_title %}{{ title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'vendors:list' %}" class="btn btn-outline">← Back</a>{% endblock %}
+
+{% block content %}
+<div class="card p-6 max-w-4xl">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field">
+        <label>{{ field.label }}</label>{{ field }}
+        {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
+        {% if field.errors %}<p class="text-rose-600 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+      </div>
+    {% endfor %}
+    <div class="flex justify-end gap-3">
+      <a href="{% url 'vendors:list' %}" class="btn btn-outline">Cancel</a>
+      <button class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

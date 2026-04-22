@@ -33,7 +33,21 @@
   <div class="shell-grid">
     {% include 'partials/sidebar.html' %}
     <div class="flex flex-col">
-      {% include 'partials/topbar.html' %}
+      <header class="bg-white border-b px-6 py-3 flex items-center justify-between">
+        <div>
+          <h1 class="text-sm text-slate-500">{% block topbar_eyebrow %}{% endblock %}</h1>
+          <p class="text-lg font-semibold text-slate-900 leading-tight">{% block topbar_title %}{% endblock %}</p>
+        </div>
+        <div class="flex items-center gap-3">
+          {% block topbar_actions %}{% endblock %}
+          {% if user.is_authenticated %}
+            <div class="flex items-center gap-2 text-sm">
+              <span class="inline-flex w-8 h-8 items-center justify-center rounded-full bg-brand-100 text-brand-800 font-bold">{{ user.friendly_name|slice:":1"|upper }}</span>
+              <span class="hidden md:inline text-slate-700">{{ user.friendly_name }}</span>
+            </div>
+          {% endif %}
+        </div>
+      </header>
       <main class="p-6 md:p-8 flex-1">
         {% if messages %}
           <div class="space-y-2 mb-4">
