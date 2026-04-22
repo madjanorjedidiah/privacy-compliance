@@ -51,6 +51,7 @@ services:
       DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME:-}
       DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL:-}
       DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD:-}
+      BOOTSTRAP: "1"   # this container runs migrations + seeds + periodic-task setup
     networks:
       - nginx_proxy_manager_default
     healthcheck:
@@ -60,31 +61,16 @@ services:
       retries: 5
       start_period: 30s
     command:
-      - sh
-      - -c
-      - |
-        set -e
-        echo '── Running migrations ──'
-        python manage.py migrate --noinput
-        echo '── Seeding jurisdictions & templates (idempotent) ──'
-        python manage.py seed_jurisdictions || true
-        python manage.py seed_templates || true
-        echo '── Collecting static files ──'
-        python manage.py collectstatic --noinput
-        if [ -n "$${DJANGO_SUPERUSER_USERNAME:-}" ] && [ -n "$${DJANGO_SUPERUSER_PASSWORD:-}" ] && [ -n "$${DJANGO_SUPERUSER_EMAIL:-}" ]; then
-          echo '── Ensuring superuser ──'
-          python manage.py createsuperuser --noinput || true
-        fi
-        echo '── Starting Gunicorn ──'
-        exec gunicorn privacy_compliance.wsgi:application \
-          --bind 0.0.0.0:8000 \
-          --workers 3 \
-          --threads 2 \
-          --timeout 120 \
-          --max-requests 1000 \
-          --max-requests-jitter 50 \
-          --access-logfile - \
-          --error-logfile -
+      - gunicorn
+      - privacy_compliance.wsgi:application
+      - --bind=0.0.0.0:8000
+      - --workers=3
+      - --threads=2
+      - --timeout=120
+      - --max-requests=1000
+      - --max-requests-jitter=50
+      - --access-logfile=-
+      - --error-logfile=-
 
   # ─────────────────────────────────────────────────────────────────────────
   # Celery worker — DPA expiry alerts, DSAR SLA warnings, training reminders

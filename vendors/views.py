@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.permissions import write_required
+from core.forms import scope_form_to_org
 
 from .models import Vendor
 
@@ -41,6 +42,7 @@ def vendor_list(request):
 def vendor_create(request):
     org = request.active_org
     form = VendorForm(request.POST or None)
+    scope_form_to_org(form, org)
     if form.is_valid():
         obj = form.save(commit=False)
         obj.organization = org
@@ -55,6 +57,7 @@ def vendor_edit(request, pk):
     org = request.active_org
     obj = get_object_or_404(Vendor, pk=pk, organization=org)
     form = VendorForm(request.POST or None, instance=obj)
+    scope_form_to_org(form, org)
     if form.is_valid():
         form.save()
         messages.success(request, 'Vendor updated.')

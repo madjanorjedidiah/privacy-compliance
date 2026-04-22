@@ -7,8 +7,9 @@ from django.utils import timezone
 
 from accounts.permissions import write_required
 from core.choices import ControlStatus
+from core.forms import scope_form_to_org
 
-from .models import Control, Evidence
+from .models import Control, ControlStatusChange, Evidence
 
 
 class ControlForm(forms.ModelForm):
@@ -62,6 +63,7 @@ def control_detail(request, pk):
     org = request.active_org
     control = get_object_or_404(Control, pk=pk, organization=org)
     form = ControlForm(request.POST or None, instance=control)
+    scope_form_to_org(form, org)
     evidence_form = EvidenceForm(request.POST or None, request.FILES or None)
 
     if request.method == 'POST':
@@ -70,10 +72,18 @@ def control_detail(request, pk):
             raise PermissionDenied('Your role does not permit editing.')
         action = request.POST.get('action')
         if action == 'update_control' and form.is_valid():
+            previous_status = control.status
             obj = form.save(commit=False)
             if obj.is_done and not obj.completed_at:
                 obj.completed_at = timezone.now()
             obj.save()
+            if previous_status != obj.status:
+                ControlStatusChange.objects.create(
+                    control=obj,
+                    from_status=previous_status,
+                    to_status=obj.status,
+                    changed_by=request.user,
+                )
             messages.success(request, 'Control updated.')
             return redirect('controls:detail', pk=pk)
         if action == 'add_evidence' and evidence_form.is_valid():
@@ -95,11 +105,18 @@ def control_quick_status(request, pk):
     org = request.active_org
     control = get_object_or_404(Control, pk=pk, organization=org)
     new_status = request.POST.get('status')
-    if new_status in [s for s, _ in ControlStatus.choices]:
+    if new_status in [s for s, _ in ControlStatus.choices] and new_status != control.status:
+        previous_status = control.status
         control.status = new_status
         if control.is_done and not control.completed_at:
             control.completed_at = timezone.now()
         control.save()
+        ControlStatusChange.objects.create(
+            control=control,
+            from_status=previous_status,
+            to_status=control.status,
+            changed_by=request.user,
+        )
     if request.htmx:
         return render(request, 'controls/_row.html', {'c': control})
     return redirect('controls:list')

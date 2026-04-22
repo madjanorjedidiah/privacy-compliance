@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.permissions import write_required
+from core.forms import scope_form_to_org
 
 from .models import DPIA
 
@@ -45,6 +46,7 @@ def dpia_list(request):
 def dpia_create(request):
     org = request.active_org
     form = DPIAForm(request.POST or None)
+    scope_form_to_org(form, org)
     if form.is_valid():
         obj = form.save(commit=False)
         obj.organization = org
@@ -66,6 +68,7 @@ def dpia_edit(request, pk):
     org = request.active_org
     obj = get_object_or_404(DPIA, pk=pk, organization=org)
     form = DPIAForm(request.POST or None, instance=obj)
+    scope_form_to_org(form, org)
     if form.is_valid():
         form.save()
         messages.success(request, 'DPIA updated.')

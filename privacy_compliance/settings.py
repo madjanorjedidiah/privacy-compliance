@@ -308,6 +308,21 @@ LOGGING = {
 RATE_LIMIT_LOGIN = env('APP_RATE_LIMIT_LOGIN')
 RATE_LIMIT_SIGNUP = env('APP_RATE_LIMIT_SIGNUP')
 
+# Behind nginx (and Nginx Proxy Manager in prod), the real client IP arrives
+# in X-Forwarded-For. Without this, django-ratelimit keys on REMOTE_ADDR
+# which is always the proxy container — effectively a global rate limit.
+RATELIMIT_IP_META_KEY = 'HTTP_X_FORWARDED_FOR'
+
+# In prod, insist that the rate-limit counter live in Redis. LocMem is
+# per-worker, so under gunicorn with N workers the limit is silently Nx.
+if not DEBUG and not TESTING and not _REDIS_URL:
+    import warnings
+    warnings.warn(
+        'APP_SECRET_KEY is set for prod but REDIS_URL is not — '
+        'rate limiting will be per-worker (not enforced globally).',
+        RuntimeWarning, stacklevel=2,
+    )
+
 
 # ----- Email ---------------------------------------------------------------
 

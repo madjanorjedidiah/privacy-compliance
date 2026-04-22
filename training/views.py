@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.permissions import write_required
+from core.forms import scope_form_to_org
 
 from .models import TrainingModule, TrainingRecord
 
@@ -49,7 +50,7 @@ def module_create(request):
 def record_create(request):
     org = request.active_org
     form = TrainingRecordForm(request.POST or None, request.FILES or None)
-    form.fields['module'].queryset = TrainingModule.objects.filter(organization=org)
+    scope_form_to_org(form, org)
     if form.is_valid():
         obj = form.save()
         messages.success(request, f'Recorded training completion for {obj.user.friendly_name}.')

@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from accounts.permissions import write_required
 from core.choices import DSARType
+from core.forms import scope_form_to_org
 
 from .models import DSARRequest
 
@@ -29,6 +30,7 @@ def dsar_list(request):
 def dsar_create(request):
     org = request.active_org
     form = DSARForm(request.POST or None)
+    scope_form_to_org(form, org)
     if form.is_valid():
         obj = form.save(commit=False)
         obj.organization = org
@@ -45,6 +47,7 @@ def dsar_detail(request, pk):
     org = request.active_org
     req = get_object_or_404(DSARRequest, pk=pk, organization=org)
     form = DSARForm(request.POST or None, instance=req)
+    scope_form_to_org(form, org)
     if request.method == 'POST':
         if not can_write(request):
             raise PermissionDenied('Your role does not permit editing.')

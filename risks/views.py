@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.permissions import write_required
+from core.forms import scope_form_to_org
 
 from .models import Risk
 
@@ -48,6 +49,7 @@ def risk_create(request):
     if not org:
         return redirect('accounts:signup')
     form = RiskForm(request.POST or None)
+    scope_form_to_org(form, org)
     if form.is_valid():
         obj = form.save(commit=False)
         obj.organization = org
@@ -63,6 +65,7 @@ def risk_edit(request, pk):
     org = request.active_org
     risk = get_object_or_404(Risk, pk=pk, organization=org)
     form = RiskForm(request.POST or None, instance=risk)
+    scope_form_to_org(form, org)
     if form.is_valid():
         form.save()
         messages.success(request, 'Risk updated.')

@@ -120,6 +120,17 @@ class DashboardViewTests(TestCase):
         resp = self.client.get(reverse('compliance:jurisdiction', kwargs={'code': 'KE'}))
         self.assertEqual(resp.status_code, 200)
 
+    def test_quick_status_emits_audit_log(self):
+        from controls.models import Control, ControlStatusChange
+        control = Control.objects.filter(organization=self.org).first()
+        self.assertEqual(ControlStatusChange.objects.filter(control=control).count(), 0)
+        resp = self.client.post(
+            reverse('controls:quick_status', kwargs={'pk': control.pk}),
+            data={'status': 'in_progress'},
+        )
+        self.assertIn(resp.status_code, (200, 302))
+        self.assertEqual(ControlStatusChange.objects.filter(control=control).count(), 1)
+
     def test_compliance_advance_cycles_status(self):
         from controls.models import Control
         from core.choices import ControlStatus
