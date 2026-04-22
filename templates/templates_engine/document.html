@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}{{ doc.title }}{% endblock %}
+{% block topbar_eyebrow %}Generated document{% endblock %}
+{% block topbar_title %}{{ doc.title }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'templates:list' %}" class="btn btn-outline">← Library</a>
+  <a href="{% url 'templates:download' doc.pk %}" class="btn btn-primary">Download .md</a>
+{% endblock %}
+
+{% block content %}
+<div class="card p-8 max-w-4xl mx-auto">
+  <div class="prose-sentinel whitespace-pre-wrap">{{ doc.rendered_content }}</div>
+</div>
+<p class="text-xs text-slate-500 mt-4 max-w-4xl mx-auto">Generated from <strong>{{ doc.template.name }}</strong> on {{ doc.created_at|date:"d M Y H:i" }} UTC.</p>
+{% endblock %}

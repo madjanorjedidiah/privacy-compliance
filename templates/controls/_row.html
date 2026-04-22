@@ -1,0 +1,29 @@
+{% load static %}
+<tr id="control-{{ c.pk }}">
+  <td class="font-mono text-xs text-slate-500">{{ c.requirement.code }}</td>
+  <td>
+    <a href="{% url 'controls:detail' c.pk %}" class="font-medium text-slate-900 hover:text-brand-700">{{ c.requirement.title }}</a>
+  </td>
+  <td><span class="badge badge-info">{{ c.requirement.framework.jurisdiction.flag_emoji }} {{ c.requirement.framework.short_name }}</span></td>
+  <td class="text-xs text-slate-500">{{ c.requirement.get_category_display }}</td>
+  <td class="text-sm">{% if c.owner %}{{ c.owner.friendly_name }}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+  <td class="text-sm">{% if c.due_date %}{{ c.due_date|date:"d M Y" }}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+  <td>
+    <form method="post"
+          hx-post="{% url 'controls:quick_status' c.pk %}"
+          hx-target="#control-{{ c.pk }}"
+          hx-swap="outerHTML">
+      {% csrf_token %}
+      <select name="status" class="text-xs rounded border border-slate-200 py-1 px-2 bg-white" onchange="this.form.requestSubmit()">
+        <option value="not_started" {% if c.status == 'not_started' %}selected{% endif %}>Not started</option>
+        <option value="in_progress" {% if c.status == 'in_progress' %}selected{% endif %}>In progress</option>
+        <option value="implemented" {% if c.status == 'implemented' %}selected{% endif %}>Implemented</option>
+        <option value="verified" {% if c.status == 'verified' %}selected{% endif %}>Verified</option>
+        <option value="not_applicable" {% if c.status == 'not_applicable' %}selected{% endif %}>N/A</option>
+      </select>
+    </form>
+  </td>
+  <td class="text-right">
+    <a href="{% url 'controls:detail' c.pk %}" class="text-brand-700 font-semibold text-xs">Open →</a>
+  </td>
+</tr>

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Create account{% endblock %}
+{% block body %}
+<div class="min-h-screen grid md:grid-cols-2 bg-white">
+  <div class="hidden md:flex flex-col justify-between p-10 bg-gradient-to-br from-brand-700 to-indigo-900 text-white">
+    <div>
+      <div class="inline-flex w-10 h-10 items-center justify-center rounded-xl bg-white/10 font-black">S</div>
+      <h2 class="mt-6 text-3xl font-bold leading-tight">Turn data-protection<br/>into a continuous posture.</h2>
+      <p class="mt-3 text-white/80">One dashboard across Ghana, Kenya, Nigeria, USA and Europe. Know what applies, prove what's done, surface what's next.</p>
+    </div>
+    <ul class="space-y-3 text-sm text-white/90">
+      <li class="flex gap-2">✅ Dynamic jurisdiction router — only what applies to you</li>
+      <li class="flex gap-2">🗺️ Cross-jurisdictional gap map — see the delta between regimes</li>
+      <li class="flex gap-2">📝 Contextual template engine — privacy notices, ROPA, DSAR responses</li>
+      <li class="flex gap-2">⚖️ Living risk score — weighted by sensitivity, volume, regulator activity</li>
+    </ul>
+  </div>
+  <div class="flex items-center justify-center p-6">
+    <div class="w-full max-w-md">
+      <h1 class="text-2xl font-bold mb-1">Create your workspace</h1>
+      <p class="text-sm text-slate-500 mb-5">Set up your organisation in minutes.</p>
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="form-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
+            {% if field.errors %}<p class="text-rose-600 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary w-full justify-center" type="submit">Create account</button>
+      </form>
+      <p class="text-sm text-slate-500 mt-4">Already have an account? <a class="text-brand-700 font-semibold" href="{% url 'accounts:login' %}">Sign in</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

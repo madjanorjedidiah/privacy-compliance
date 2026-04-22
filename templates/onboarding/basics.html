@@ -1,0 +1,21 @@
+{% extends 'onboarding/_shell.html' %}
+{% block onboard_body %}
+<div class="card p-6">
+  <h2 class="text-xl font-semibold">Tell us about your organisation</h2>
+  <p class="text-sm text-slate-500 mt-1">We use this to scope your compliance obligations. It takes about 30 seconds.</p>
+  <form method="post" class="mt-5 space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-rose-600">*</span>{% endif %}</label>
+        {{ field }}
+        {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
+        {% if field.errors %}<p class="text-rose-600 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+      </div>
+    {% endfor %}
+    <div class="flex justify-end gap-3 pt-2">
+      <button class="btn btn-primary" type="submit">Continue →</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

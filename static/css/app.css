@@ -1,0 +1,122 @@
+/* Sentinel — custom styles layered on top of Tailwind CDN */
+
+:root {
+  --color-bg: #f7f8fb;
+  --color-surface: #ffffff;
+  --color-ink: #0f172a;
+  --color-ink-muted: #475569;
+  --color-brand: #4338ca;
+  --color-brand-soft: #eef2ff;
+  --color-success: #059669;
+  --color-warn: #d97706;
+  --color-danger: #dc2626;
+  --color-border: #e2e8f0;
+}
+
+html, body { background: var(--color-bg); color: var(--color-ink); }
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+.shell-grid { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+@media (max-width: 900px) { .shell-grid { grid-template-columns: 1fr; } }
+
+.sidebar {
+  background: #0b1220;
+  color: #e2e8f0;
+}
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.5rem;
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  transition: background 120ms ease, color 120ms ease;
+}
+.sidebar a:hover { background: #1e293b; color: #fff; }
+.sidebar a.active { background: rgba(67,56,202,0.25); color: #fff; border-left: 3px solid #818cf8; border-radius: 0 0.5rem 0.5rem 0; }
+
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 0.75rem; box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+.kpi { display: flex; flex-direction: column; gap: 0.15rem; padding: 1rem 1.15rem; }
+.kpi .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-muted); }
+.kpi .value { font-size: 1.7rem; font-weight: 700; color: var(--color-ink); }
+.kpi .hint { font-size: 0.75rem; color: var(--color-ink-muted); }
+
+.badge { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; padding: 0.2rem 0.55rem; border-radius: 999px; font-weight: 600; }
+.badge-ok { background: #ecfdf5; color: #047857; }
+.badge-warn { background: #fffbeb; color: #b45309; }
+.badge-danger { background: #fee2e2; color: #b91c1c; }
+.badge-info { background: #eef2ff; color: #3730a3; }
+.badge-muted { background: #f1f5f9; color: #475569; }
+
+.progress { position: relative; height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+.progress > span { position: absolute; inset: 0; display: block; background: linear-gradient(90deg, #4338ca, #6366f1); border-radius: 999px; }
+
+.heat-cell {
+  aspect-ratio: 1/1;
+  border-radius: 0.5rem;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 0.78rem;
+}
+
+.gap-cell {
+  min-height: 56px;
+  border-radius: 0.5rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 600;
+  border: 1px solid var(--color-border);
+}
+
+.table-sentinel { width: 100%; border-collapse: separate; border-spacing: 0; }
+.table-sentinel th { text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-muted); padding: 0.65rem 0.9rem; background: #f8fafc; border-bottom: 1px solid var(--color-border); }
+.table-sentinel td { padding: 0.8rem 0.9rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+.table-sentinel tbody tr:hover { background: #fafbfe; }
+
+.prose-sentinel h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.8rem; }
+.prose-sentinel h2 { font-size: 1.15rem; font-weight: 700; margin-top: 1.2rem; margin-bottom: 0.4rem; }
+.prose-sentinel h3 { font-size: 1rem; font-weight: 600; margin-top: 0.9rem; margin-bottom: 0.35rem; }
+.prose-sentinel p { margin: 0.4rem 0; line-height: 1.55; }
+.prose-sentinel ul { padding-left: 1.3rem; margin: 0.4rem 0; }
+.prose-sentinel li { list-style: disc; margin: 0.15rem 0; }
+.prose-sentinel table { width: 100%; border-collapse: collapse; margin: 0.6rem 0; font-size: 0.85rem; }
+.prose-sentinel th, .prose-sentinel td { border: 1px solid var(--color-border); padding: 0.4rem; }
+
+.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.9rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; cursor: pointer; }
+.btn-primary { background: var(--color-brand); color: #fff; }
+.btn-primary:hover { background: #3730a3; }
+.btn-outline { border-color: var(--color-border); color: var(--color-ink); background: #fff; }
+.btn-outline:hover { border-color: #cbd5e1; }
+.btn-danger { background: var(--color-danger); color: #fff; }
+
+.form-field label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--color-ink); margin-bottom: 0.25rem; }
+.form-field input[type=text],
+.form-field input[type=email],
+.form-field input[type=url],
+.form-field input[type=password],
+.form-field input[type=date],
+.form-field input[type=datetime-local],
+.form-field input[type=number],
+.form-field select,
+.form-field textarea,
+input.sentinel-input, select.sentinel-input, textarea.sentinel-input {
+  width: 100%; padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-border);
+  background: #fff; font-size: 0.9rem;
+}
+.form-field .helptext, .sentinel-help { font-size: 0.78rem; color: var(--color-ink-muted); margin-top: 0.3rem; }
+.form-field ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.3rem; }
+.form-field ul li label { font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 0.45rem; }
+
+.focus-ring:focus { outline: 2px solid #818cf8; outline-offset: 2px; }
+
+.status-pill { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 999px; }
+.status-not_started { background: #f1f5f9; color: #475569; }
+.status-in_progress { background: #fef3c7; color: #92400e; }
+.status-implemented { background: #dbeafe; color: #1e40af; }
+.status-verified { background: #d1fae5; color: #065f46; }
+.status-not_applicable { background: #f5f3ff; color: #5b21b6; }
+
+.severity-critical { background: #7f1d1d; color: #fff; }
+.severity-high { background: #b91c1c; color: #fff; }
+.severity-medium { background: #d97706; color: #fff; }
+.severity-low { background: #059669; color: #fff; }
+.severity-info { background: #0284c7; color: #fff; }

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}{{ req.code }}{% endblock %}
+{% block topbar_eyebrow %}{{ req.framework.jurisdiction.flag_emoji }} {{ req.framework.short_name }}{% endblock %}
+{% block topbar_title %}{{ req.code }} — {{ req.title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'jurisdictions:framework' req.framework.code %}" class="btn btn-outline">← Framework</a>{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+  <div class="card p-6 lg:col-span-2">
+    <div class="flex items-center gap-2 mb-3 flex-wrap">
+      <span class="badge badge-muted">{{ req.code }}</span>
+      <span class="badge badge-info">{{ req.get_category_display }}</span>
+      <span class="badge badge-muted">Severity weight {{ req.severity_weight }}/5</span>
+    </div>
+    <p class="text-sm text-slate-500">{{ req.citation }}</p>
+    <p class="mt-3 text-slate-700 leading-relaxed">{{ req.summary }}</p>
+    {% if req.guidance %}
+      <h3 class="mt-5 text-sm uppercase tracking-widest text-slate-500">Guidance</h3>
+      <p class="text-sm text-slate-700 mt-1">{{ req.guidance|linebreaksbr }}</p>
+    {% endif %}
+    {% if req.typical_evidence %}
+      <h3 class="mt-4 text-sm uppercase tracking-widest text-slate-500">Typical evidence</h3>
+      <p class="text-sm text-slate-700 mt-1">{{ req.typical_evidence|linebreaksbr }}</p>
+    {% endif %}
+  </div>
+
+  <div class="card p-5">
+    <h3 class="font-semibold mb-2">Equivalents in other regimes</h3>
+    <ul class="space-y-2 text-sm">
+      {% for m in mappings %}
+        <li class="flex items-center justify-between border-b border-slate-100 pb-2 last:border-b-0 last:pb-0">
+          <div>
+            <a class="text-brand-800 hover:underline" href="{% url 'jurisdictions:requirement' m.target.pk %}">{{ m.target.framework.jurisdiction.flag_emoji }} {{ m.target.framework.short_name }} · {{ m.target.code }}</a>
+            {% if m.note %}<p class="text-xs text-slate-500">{{ m.note }}</p>{% endif %}
+          </div>
+          <span class="badge
+            {% if m.equivalence == 'equivalent' %}badge-ok
+            {% elif m.equivalence == 'stricter' %}badge-danger
+            {% elif m.equivalence == 'weaker' %}badge-warn
+            {% else %}badge-info{% endif %}">{{ m.get_equivalence_display }}</span>
+        </li>
+      {% endfor %}
+      {% for m in reverse_mappings %}
+        <li class="flex items-center justify-between border-b border-slate-100 pb-2 last:border-b-0 last:pb-0">
+          <div>
+            <a class="text-brand-800 hover:underline" href="{% url 'jurisdictions:requirement' m.source.pk %}">{{ m.source.framework.jurisdiction.flag_emoji }} {{ m.source.framework.short_name }} · {{ m.source.code }}</a>
+            {% if m.note %}<p class="text-xs text-slate-500">{{ m.note }}</p>{% endif %}
+          </div>
+          <span class="badge badge-info">{{ m.get_equivalence_display }}</span>
+        </li>
+      {% endfor %}
+      {% if not mappings and not reverse_mappings %}
+        <li class="text-sm text-slate-500">No cross-references mapped.</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

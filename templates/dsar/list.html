@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}DSARs{% endblock %}
+{% block topbar_eyebrow %}Subject rights{% endblock %}
+{% block topbar_title %}Data Subject Requests{% endblock %}
+{% block topbar_actions %}<a href="{% url 'dsar:create' %}" class="btn btn-primary">+ Log DSAR</a>{% endblock %}
+
+{% block content %}
+<div class="card overflow-hidden">
+  <table class="table-sentinel">
+    <thead>
+      <tr><th>Subject</th><th>Type</th><th>Received</th><th>Due</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for d in dsars %}
+        <tr>
+          <td>
+            <a class="font-medium text-slate-900 hover:text-brand-700" href="{% url 'dsar:detail' d.pk %}">{{ d.subject_name }}</a>
+            <p class="text-xs text-slate-500">{{ d.subject_email }}{% if d.subject_country %} · {{ d.subject_country }}{% endif %}</p>
+          </td>
+          <td class="text-xs">{{ d.get_request_type_display }}</td>
+          <td class="text-xs">{{ d.received_at|date:"d M Y" }}</td>
+          <td class="text-xs {% if d.is_overdue %}text-rose-600 font-semibold{% endif %}">{{ d.due_at|date:"d M Y" }}{% if d.is_overdue %} · Overdue{% endif %}</td>
+          <td><span class="badge badge-info">{{ d.get_status_display }}</span></td>
+          <td class="text-right"><a href="{% url 'dsar:detail' d.pk %}" class="text-brand-700 font-semibold text-xs">Open →</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-center text-slate-500 py-8">No DSARs yet. <a href="{% url 'dsar:create' %}" class="text-brand-700 font-semibold">Log the first →</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

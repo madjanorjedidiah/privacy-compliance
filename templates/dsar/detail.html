@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}DSAR — {{ req.subject_name }}{% endblock %}
+{% block topbar_eyebrow %}DSAR{% endblock %}
+{% block topbar_title %}{{ req.subject_name }} · {{ req.get_request_type_display }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'dsar:list' %}" class="btn btn-outline">← Back</a>{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+  <div class="card p-6 lg:col-span-2">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-field">
+          <label>{{ field.label }}</label>{{ field }}
+        </div>
+      {% endfor %}
+      <div class="flex justify-end gap-3">
+        <button class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+  <div class="card p-5 text-sm space-y-3">
+    <p><span class="text-slate-500">Received:</span> {{ req.received_at|date:"d M Y H:i" }}</p>
+    <p><span class="text-slate-500">Due:</span> <strong class="{% if req.is_overdue %}text-rose-600{% endif %}">{{ req.due_at|date:"d M Y" }}</strong>{% if req.is_overdue %} (overdue){% endif %}</p>
+    <p><span class="text-slate-500">Status:</span> <span class="badge badge-info">{{ req.get_status_display }}</span></p>
+    {% if req.closed_at %}<p><span class="text-slate-500">Closed:</span> {{ req.closed_at|date:"d M Y H:i" }}</p>{% endif %}
+
+    {% if req.status != 'closed' %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="close"/>
+        <button class="btn btn-danger w-full">Close DSAR</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

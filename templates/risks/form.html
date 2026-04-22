@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block topbar_eyebrow %}Risks{% endblock %}
+{% block topbar_title %}{{ title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'risks:list' %}" class="btn btn-outline">← Back</a>{% endblock %}
+
+{% block content %}
+<div class="card p-6 max-w-3xl">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div class="form-field">
+      <label>{{ form.title.label }}</label>{{ form.title }}
+      {% if form.title.errors %}<p class="text-rose-600 text-xs mt-1">{{ form.title.errors.0 }}</p>{% endif %}
+    </div>
+    <div class="form-field">
+      <label>{{ form.description.label }}</label>{{ form.description }}
+    </div>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="form-field"><label>{{ form.category.label }}</label>{{ form.category }}</div>
+      <div class="form-field"><label>{{ form.likelihood.label }}</label>{{ form.likelihood }}</div>
+      <div class="form-field"><label>{{ form.impact.label }}</label>{{ form.impact }}</div>
+    </div>
+    <div class="grid md:grid-cols-4 gap-4">
+      <div class="form-field"><label>{{ form.data_sensitivity.label }}</label>{{ form.data_sensitivity }}<p class="helptext">1 (low) — 5 (special)</p></div>
+      <div class="form-field"><label>{{ form.data_volume_log10.label }}</label>{{ form.data_volume_log10 }}<p class="helptext">log₁₀ of subjects (3=1k, 6=1M)</p></div>
+      <div class="form-field"><label>{{ form.regulator_activity.label }}</label>{{ form.regulator_activity }}<p class="helptext">1–5 regulator heat</p></div>
+      <div class="form-field"><label>{{ form.control_effectiveness.label }}</label>{{ form.control_effectiveness }}<p class="helptext">0–100 %</p></div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="form-field"><label>{{ form.treatment.label }}</label>{{ form.treatment }}</div>
+      <div class="form-field"><label>{{ form.review_date.label }}</label>{{ form.review_date }}</div>
+    </div>
+    <div class="form-field">
+      <label>{{ form.treatment_notes.label }}</label>{{ form.treatment_notes }}
+    </div>
+    <div class="form-field">
+      <label>{{ form.owner.label }}</label>{{ form.owner }}
+    </div>
+    <div class="form-field">
+      <label>{{ form.linked_requirements.label }}</label>{{ form.linked_requirements }}
+      <p class="helptext">Link to one or more requirements this risk is connected to.</p>
+    </div>
+    <div class="flex justify-end gap-3">
+      <a href="{% url 'risks:list' %}" class="btn btn-outline">Cancel</a>
+      <button class="btn btn-primary">Save risk</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

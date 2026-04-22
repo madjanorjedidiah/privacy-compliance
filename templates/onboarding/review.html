@@ -1,0 +1,38 @@
+{% extends 'onboarding/_shell.html' %}
+{% block onboard_body %}
+<div class="card p-6">
+  <h2 class="text-xl font-semibold">Your applicability preview</h2>
+  <p class="text-sm text-slate-500 mt-1">Based on your answers, here are the regimes we'll enable for your workspace.</p>
+
+  <ul class="mt-5 divide-y divide-slate-100">
+    {% for row in preview %}
+      <li class="py-3 flex items-start gap-3">
+        <span class="mt-0.5 inline-flex w-2.5 h-2.5 rounded-full
+          {% if row.applicable %}bg-emerald-500{% else %}bg-slate-300{% endif %}"></span>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold">{{ row.framework.jurisdiction.flag_emoji }} {{ row.framework.short_name }}</span>
+            {% if row.applicable %}
+              <span class="badge badge-ok">Applicable</span>
+            {% else %}
+              <span class="badge badge-muted">Not applicable</span>
+            {% endif %}
+          </div>
+          <p class="text-sm text-slate-500 mt-1">{{ row.rationale }}</p>
+        </div>
+      </li>
+    {% empty %}
+      <li class="py-3 text-sm text-slate-500">No frameworks loaded yet.</li>
+    {% endfor %}
+  </ul>
+
+  <form method="post" class="mt-6 flex items-center justify-between">
+    {% csrf_token %}
+    <p class="text-sm text-slate-500">Generating your initial controls and gap map…</p>
+    <div class="flex gap-3">
+      <a class="btn btn-outline" href="{% url 'onboarding:profile' %}">← Edit profile</a>
+      <button class="btn btn-primary" type="submit">Finish setup →</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

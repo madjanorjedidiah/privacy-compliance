@@ -1,0 +1,75 @@
+{% extends 'onboarding/_shell.html' %}
+{% block onboard_body %}
+<div class="card p-6">
+  <h2 class="text-xl font-semibold">What data do you process, and for whom?</h2>
+  <p class="text-sm text-slate-500 mt-1">The applicability engine uses these answers to decide which regimes apply to you and which obligations light up.</p>
+  <form method="post" class="mt-5 space-y-6">
+    {% csrf_token %}
+
+    <fieldset class="space-y-4">
+      <legend class="text-xs font-bold uppercase tracking-widest text-slate-500">Who you are</legend>
+      <div class="form-field">
+        <label>{{ form.sectors.label }}</label>
+        {{ form.sectors }}
+      </div>
+    </fieldset>
+
+    <fieldset class="space-y-4">
+      <legend class="text-xs font-bold uppercase tracking-widest text-slate-500">What you process</legend>
+      <div class="form-field">
+        <label>{{ form.data_categories.label }}</label>
+        {{ form.data_categories }}
+      </div>
+      <div class="form-field">
+        <label>{{ form.processing_purposes.label }}</label>
+        {{ form.processing_purposes }}
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-field">
+          <label>{{ form.annual_data_subjects_estimate.label }}</label>
+          {{ form.annual_data_subjects_estimate }}
+          <p class="helptext">Estimate of distinct data subjects processed annually.</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="space-y-4">
+      <legend class="text-xs font-bold uppercase tracking-widest text-slate-500">Reach & establishment</legend>
+      <div class="form-field">
+        <label>{{ form.data_subject_locations.label }}</label>
+        {{ form.data_subject_locations }}
+        <p class="helptext">{{ form.data_subject_locations.help_text }}</p>
+      </div>
+      <div class="form-field">
+        <label>{{ form.has_establishment_in.label }}</label>
+        {{ form.has_establishment_in }}
+        <p class="helptext">{{ form.has_establishment_in.help_text }}</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="processes_eu_residents" {% if form.initial.processes_eu_residents %}checked{% endif %}/> Process data of EU/EEA residents</label>
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="offers_to_california_residents" {% if form.initial.offers_to_california_residents %}checked{% endif %}/> Offer goods/services to California residents</label>
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="cross_border_transfers" {% if form.initial.cross_border_transfers %}checked{% endif %}/> Cross-border transfers</label>
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="uses_automated_decision_making" {% if form.initial.uses_automated_decision_making %}checked{% endif %}/> Use automated decision-making / profiling</label>
+      </div>
+    </fieldset>
+
+    <fieldset class="space-y-4">
+      <legend class="text-xs font-bold uppercase tracking-widest text-slate-500">High-risk indicators</legend>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="processes_childrens_data" {% if form.initial.processes_childrens_data %}checked{% endif %}/> Process children's data</label>
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="processes_health_data" {% if form.initial.processes_health_data %}checked{% endif %}/> Process health data</label>
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="processes_biometric_data" {% if form.initial.processes_biometric_data %}checked{% endif %}/> Process biometric data</label>
+      </div>
+      <div class="form-field">
+        <label>{{ form.transfer_mechanisms.label }}</label>
+        {{ form.transfer_mechanisms }}
+      </div>
+    </fieldset>
+
+    <div class="flex justify-end gap-3">
+      <a class="btn btn-outline" href="{% url 'onboarding:basics' %}">← Back</a>
+      <button class="btn btn-primary" type="submit">Continue to review →</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}{{ framework.short_name }}{% endblock %}
+{% block topbar_eyebrow %}{{ framework.jurisdiction.flag_emoji }} {{ framework.jurisdiction.name }}{% endblock %}
+{% block topbar_title %}{{ framework.short_name }} — {{ framework.long_name }}{% endblock %}
+{% block topbar_actions %}
+  {% if framework.reference_url %}<a href="{{ framework.reference_url }}" target="_blank" rel="noopener" class="btn btn-outline">Legal source ↗</a>{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card p-6 mb-5">
+  <p class="text-sm text-slate-600">{{ framework.summary }}</p>
+  {% if framework.max_fine_description %}<p class="text-sm text-rose-700 mt-2"><strong>Penalties:</strong> {{ framework.max_fine_description }}</p>{% endif %}
+</div>
+
+<h3 class="text-sm uppercase tracking-widest text-slate-500 mb-3">Requirements ({{ requirements|length }})</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {% for r in requirements %}
+    <a href="{% url 'jurisdictions:requirement' r.pk %}" class="card p-5 hover:border-brand-500">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="badge badge-muted">{{ r.code }}</span>
+        <span class="badge badge-info">{{ r.get_category_display }}</span>
+      </div>
+      <p class="font-semibold text-slate-900">{{ r.title }}</p>
+      <p class="text-xs text-slate-500 mt-1">{{ r.summary|truncatechars:180 }}</p>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Log incident{% endblock %}
+{% block topbar_eyebrow %}Incidents{% endblock %}
+{% block topbar_title %}Log an incident{% endblock %}
+{% block topbar_actions %}<a href="{% url 'incidents:list' %}" class="btn btn-outline">← Back</a>{% endblock %}
+
+{% block content %}
+<div class="card p-6 max-w-3xl">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field">
+        <label>{{ field.label }}</label>{{ field }}
+      </div>
+    {% endfor %}
+    <p class="text-sm text-slate-500">A 72-hour regulator notification deadline is set automatically from the detected-at timestamp.</p>
+    <div class="flex justify-end gap-3">
+      <a href="{% url 'incidents:list' %}" class="btn btn-outline">Cancel</a>
+      <button class="btn btn-primary">Log incident</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

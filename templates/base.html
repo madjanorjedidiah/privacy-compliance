@@ -1,0 +1,60 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}{{ BRAND.BRAND_NAME }}{% endblock %} — {{ BRAND.BRAND_NAME }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+            },
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="antialiased">
+  {% block body %}
+  <div class="shell-grid">
+    {% include 'partials/sidebar.html' %}
+    <div class="flex flex-col">
+      {% include 'partials/topbar.html' %}
+      <main class="p-6 md:p-8 flex-1">
+        {% if messages %}
+          <div class="space-y-2 mb-4">
+            {% for message in messages %}
+              <div class="rounded-lg border px-4 py-3 text-sm
+                {% if message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800
+                {% elif message.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-800
+                {% elif message.tags == 'warning' %}border-amber-200 bg-amber-50 text-amber-800
+                {% else %}border-slate-200 bg-slate-50 text-slate-800{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+      <footer class="px-6 py-4 text-xs text-slate-500 border-t bg-white">
+        {{ BRAND.LEGAL_DISCLAIMER }}
+      </footer>
+    </div>
+  </div>
+  {% endblock %}
+</body>
+</html>

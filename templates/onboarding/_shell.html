@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{{ block.super }} — Setup{% endblock %}
+{% block topbar_eyebrow %}Onboarding{% endblock %}
+{% block topbar_title %}Set up your compliance workspace{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <ol class="flex items-center gap-3 mb-6 text-xs uppercase tracking-widest">
+    {% for i in "123" %}
+      {% with n=forloop.counter %}
+        <li class="flex items-center gap-2">
+          <span class="inline-flex w-7 h-7 items-center justify-center rounded-full
+                       {% if step == n %}bg-brand-700 text-white{% elif step > n %}bg-emerald-500 text-white{% else %}bg-slate-200 text-slate-500{% endif %} font-bold">{{ n }}</span>
+          <span class="hidden md:inline {% if step == n %}text-slate-900{% else %}text-slate-400{% endif %}">
+            {% if n == 1 %}Organisation{% elif n == 2 %}Data profile{% else %}Review{% endif %}
+          </span>
+          {% if not forloop.last %}<span class="text-slate-300 mx-1">→</span>{% endif %}
+        </li>
+      {% endwith %}
+    {% endfor %}
+  </ol>
+
+  {% block onboard_body %}{% endblock %}
+</div>
+{% endblock %}

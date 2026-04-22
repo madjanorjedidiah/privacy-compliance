@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}{{ control.requirement.code }}{% endblock %}
+{% block topbar_eyebrow %}Control{% endblock %}
+{% block topbar_title %}{{ control.requirement.code }} — {{ control.requirement.title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'controls:list' %}" class="btn btn-outline">← All controls</a>{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+  <div class="lg:col-span-2 space-y-5">
+    <div class="card p-6">
+      <div class="flex items-center flex-wrap gap-2">
+        <span class="badge badge-info">{{ control.requirement.framework.jurisdiction.flag_emoji }} {{ control.requirement.framework.short_name }}</span>
+        <span class="badge badge-muted">{{ control.requirement.get_category_display }}</span>
+        <span class="status-pill status-{{ control.status }}">{{ control.get_status_display }}</span>
+      </div>
+      <h2 class="mt-3 text-xl font-semibold">{{ control.requirement.title }}</h2>
+      <p class="text-sm text-slate-500 mt-1">{{ control.requirement.citation }}</p>
+      <p class="mt-4 text-slate-700 leading-relaxed">{{ control.requirement.summary }}</p>
+
+      {% if control.requirement.guidance %}
+        <h3 class="mt-5 text-sm font-semibold uppercase tracking-widest text-slate-500">How to satisfy it</h3>
+        <p class="text-sm text-slate-700 mt-1">{{ control.requirement.guidance|linebreaksbr }}</p>
+      {% endif %}
+
+      {% if control.requirement.typical_evidence %}
+        <h3 class="mt-4 text-sm font-semibold uppercase tracking-widest text-slate-500">Typical evidence</h3>
+        <p class="text-sm text-slate-700 mt-1">{{ control.requirement.typical_evidence|linebreaksbr }}</p>
+      {% endif %}
+    </div>
+
+    <div class="card p-6">
+      <h3 class="font-semibold mb-3">Evidence</h3>
+      <ul class="space-y-3">
+        {% for e in evidence_list %}
+          <li class="flex items-start justify-between border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+            <div>
+              <p class="font-medium text-sm">{{ e.title }}</p>
+              {% if e.description %}<p class="text-xs text-slate-500">{{ e.description }}</p>{% endif %}
+              <p class="text-xs text-slate-400 mt-1">
+                {% if e.file %}<a class="text-brand-700" href="{{ e.file.url }}">Download file</a>{% endif %}
+                {% if e.external_link %}<a class="text-brand-700 ml-2" href="{{ e.external_link }}">External link</a>{% endif %}
+                · Added {{ e.created_at|date:"d M Y" }}
+              </p>
+            </div>
+          </li>
+        {% empty %}
+          <li class="text-sm text-slate-500">No evidence uploaded yet.</li>
+        {% endfor %}
+      </ul>
+
+      <form method="post" enctype="multipart/form-data" class="mt-5 space-y-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_evidence"/>
+        <div class="form-field">
+          <label>Title</label>
+          {{ evidence_form.title }}
+        </div>
+        <div class="form-field">
+          <label>Description</label>
+          {{ evidence_form.description }}
+        </div>
+        <div class="grid md:grid-cols-2 gap-3">
+          <div class="form-field">
+            <label>External link (optional)</label>
+            {{ evidence_form.external_link }}
+          </div>
+          <div class="form-field">
+            <label>File (optional)</label>
+            {{ evidence_form.file }}
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button class="btn btn-outline">Add evidence</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="space-y-5">
+    <div class="card p-5">
+      <h3 class="font-semibold mb-3">Update</h3>
+      <form method="post" class="space-y-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_control"/>
+        {% for field in form %}
+          <div class="form-field">
+            <label>{{ field.label }}</label>
+            {{ field }}
+          </div>
+        {% endfor %}
+        <div class="flex justify-end">
+          <button class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card p-5 text-sm">
+      <h3 class="font-semibold mb-2">Progress</h3>
+      <div class="progress mb-2"><span style="width: {{ control.progress_weight }}%"></span></div>
+      <p class="text-xs text-slate-500">{{ control.progress_weight }}% towards verified</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

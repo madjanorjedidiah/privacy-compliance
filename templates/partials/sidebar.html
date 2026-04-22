@@ -1,0 +1,38 @@
+{% load static %}
+<aside class="sidebar flex flex-col px-4 py-5">
+  <a href="{% url 'dashboard:home' %}" class="flex items-center gap-2 px-2 pb-5 mb-2 border-b border-slate-700">
+    <span class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-brand-700 text-white font-black">S</span>
+    <span class="flex flex-col leading-tight">
+      <span class="text-white font-bold tracking-wide">{{ BRAND.BRAND_NAME }}</span>
+      <span class="text-[10px] uppercase tracking-widest text-slate-400">{{ BRAND.BRAND_TAGLINE }}</span>
+    </span>
+  </a>
+
+  {% if user.is_authenticated %}
+    {% if active_org %}
+      <div class="px-2 pb-3 mb-2 text-[11px] uppercase tracking-widest text-slate-500">Workspace</div>
+      <div class="px-2 pb-4 text-sm text-slate-200">{{ active_org.name }}</div>
+    {% endif %}
+
+    <nav class="space-y-1">
+      <a href="{% url 'dashboard:home' %}"           class="{% if '/dashboard/' in request.path and 'gap' not in request.path %}active{% endif %}">📊 Command Center</a>
+      <a href="{% url 'dashboard:gap_map' %}"        class="{% if 'gap-map' in request.path %}active{% endif %}">🗺️ Gap Map</a>
+      <a href="{% url 'controls:list' %}"            class="{% if '/controls/' in request.path %}active{% endif %}">✅ Controls</a>
+      <a href="{% url 'risks:list' %}"               class="{% if '/risks/' in request.path %}active{% endif %}">⚠️ Risks</a>
+      <a href="{% url 'dsar:list' %}"                class="{% if '/dsar/' in request.path %}active{% endif %}">📬 DSARs</a>
+      <a href="{% url 'incidents:list' %}"           class="{% if '/incidents/' in request.path %}active{% endif %}">🚨 Incidents</a>
+      <a href="{% url 'templates:list' %}"           class="{% if '/templates/' in request.path %}active{% endif %}">📝 Templates</a>
+      <a href="{% url 'jurisdictions:list' %}"       class="{% if '/jurisdictions/' in request.path %}active{% endif %}">🌍 Jurisdictions</a>
+    </nav>
+
+    <div class="mt-auto px-2 py-3 text-[11px] text-slate-400">
+      Signed in as <span class="text-slate-100">{{ user.friendly_name }}</span>
+      <a href="{% url 'accounts:logout' %}" class="block mt-2 text-rose-300 hover:text-rose-200">Sign out</a>
+    </div>
+  {% else %}
+    <nav class="space-y-1 mt-4">
+      <a href="{% url 'accounts:login' %}">🔐 Sign in</a>
+      <a href="{% url 'accounts:signup' %}">✨ Create account</a>
+    </nav>
+  {% endif %}
+</aside>

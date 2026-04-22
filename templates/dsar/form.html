@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Log DSAR{% endblock %}
+{% block topbar_eyebrow %}Subject rights{% endblock %}
+{% block topbar_title %}Log a Data Subject Request{% endblock %}
+{% block topbar_actions %}<a href="{% url 'dsar:list' %}" class="btn btn-outline">← Back</a>{% endblock %}
+
+{% block content %}
+<div class="card p-6 max-w-2xl">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field">
+        <label>{{ field.label }}</label>{{ field }}
+        {% if field.errors %}<p class="text-rose-600 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+      </div>
+    {% endfor %}
+    <div class="flex justify-end gap-3">
+      <a href="{% url 'dsar:list' %}" class="btn btn-outline">Cancel</a>
+      <button class="btn btn-primary">Log DSAR</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
