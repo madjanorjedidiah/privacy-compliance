@@ -46,20 +46,36 @@ python3.13 -m venv .venv
 
 Visit http://127.0.0.1:8000/ — sign up, walk the onboarding wizard, and land on the Command Center.
 
-## Quickstart — Docker (Postgres)
+## Deploy — shared infra (Nginx Proxy Manager + Postgres + Redis)
+
+The production stack at `mydataprotection.cocoatool.org` **does not run its
+own Postgres/Redis/NPM**. Instead it joins the host's existing
+`nginx_proxy_manager_default` docker network and talks to:
+
+- `pgbouncer:6432` → shared Postgres (create the `privacy_db` database + role)
+- `redis:6379` → shared Redis (use DB indexes 4 for cache, 5 for celery)
+- Nginx Proxy Manager → terminates TLS, forwards to `privacy_nginx:80`
+
+Services launched by `docker-compose.yml`:
+
+| Service | Purpose |
+|---|---|
+| `privacy_django` | gunicorn serving the Sentinel Django app |
+| `privacy_celery` | Celery worker (DPA expiry sweeps, training reminders, ad-hoc jobs) |
+| `privacy_beat` | Celery Beat scheduler (DB-backed via `django_celery_beat`) |
+| `privacy_nginx` | Internal nginx — static/media + upstream routing, behind NPM |
+
+Deploy steps:
 
 ```bash
-docker compose up --build
+cp .env.example .env               # fill in SENTINEL_SECRET_KEY + POSTGRES_PASSWORD
+docker compose build
+docker compose up -d
+# Point an NPM proxy host from mydataprotection.cocoatool.org → privacy_nginx:80
 ```
 
-Then visit http://localhost:8000/. The entrypoint script applies migrations, seeds jurisdictions + templates, and provisions an `admin / admin12345!` superuser (edit the credentials in `docker-compose.yml` before production).
-
-Build-only (no compose):
-
-```bash
-docker build -t sentinel .
-docker run --rm -p 8000:8000 -e SENTINEL_SECRET_KEY=change-me sentinel
-```
+The `privacy_django` command handles migrations, idempotent seeds, static
+collection, and (optionally) superuser provisioning on startup.
 
 ## Testing
 

@@ -18,7 +18,16 @@ env = environ.Env(
     DJANGO_ALLOWED_HOSTS=(list, []),
     DJANGO_CSRF_TRUSTED_ORIGINS=(list, []),
     DATABASE_URL=(str, ''),
+    # Shared-infra DB_* fallback (pgbouncer defaults on the host).
+    DB_ENGINE=(str, 'django.db.backends.postgresql'),
+    DB_NAME=(str, ''),
+    DB_USER=(str, 'postgres'),
+    DB_PASSWORD=(str, ''),
+    DB_HOST=(str, 'pgbouncer'),
+    DB_PORT=(str, '6432'),
     REDIS_URL=(str, ''),
+    CELERY_BROKER_URL=(str, ''),
+    CELERY_RESULT_BACKEND=(str, ''),
     SENTINEL_SECRET_KEY=(str, ''),
     SENTINEL_ENABLE_HTTPS=(bool, False),
     SENTINEL_HSTS_SECONDS=(int, 0),
@@ -50,6 +59,7 @@ INSTALLED_APPS = [
 
     'django_htmx',
     'rest_framework',
+    'django_celery_beat',
 
     'core',
     'accounts',
@@ -139,8 +149,21 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # ----- Database -------------------------------------------------------------
 
 _DATABASE_URL = env('DATABASE_URL')
+_DB_NAME = env.str('DB_NAME', default='')
 if _DATABASE_URL:
     DATABASES = {'default': env.db_url('DATABASE_URL')}
+elif _DB_NAME:
+    # Shared-infra style (mirrors docker-compose on the server).
+    DATABASES = {
+        'default': {
+            'ENGINE': env.str('DB_ENGINE', default='django.db.backends.postgresql'),
+            'NAME': _DB_NAME,
+            'USER': env.str('DB_USER', default='postgres'),
+            'PASSWORD': env.str('DB_PASSWORD', default=''),
+            'HOST': env.str('DB_HOST', default='pgbouncer'),
+            'PORT': env.str('DB_PORT', default='6432'),
+        }
+    }
 else:
     DATABASES = {
         'default': {
@@ -274,3 +297,16 @@ REST_FRAMEWORK = {
         'dsar-intake': '30/hour',
     },
 }
+
+# ----- Celery ---------------------------------------------------------------
+
+CELERY_BROKER_URL = env('CELERY_BROKER_URL') or env('REDIS_URL') or 'memory://'
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND') or env('REDIS_URL') or 'cache+memory://'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_TASK_TIME_LIMIT = 300
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
