@@ -78,9 +78,9 @@ if DEBUG or TESTING:
         'http://127.0.0.1:8000', 'http://localhost:8000', 'http://0.0.0.0:8000',
     ]
 else:
-    ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS') or ['mydataprotection.cocoatool.org']
+    ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS') or ['mydatacompliance.domainname']
     CSRF_TRUSTED_ORIGINS = env('DJANGO_CSRF_TRUSTED_ORIGINS') or [
-        'https://mydataprotection.cocoatool.org',
+        'https://mydatacompliance.domainname',
     ]
 
 
@@ -355,7 +355,7 @@ else:
     EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
     DEFAULT_FROM_EMAIL = env.str(
         'DJANGO_DEFAULT_FROM_EMAIL',
-        default='Privacy Compliance <no-reply@mydataprotection.cocoatool.org>',
+        default='Privacy Compliance <no-reply@mydatacompliance.domainname>',
     )
     ADMINS = [tuple(a.split(':', 1)) for a in env.list('DJANGO_ADMINS', default=[]) if ':' in a]
     SERVER_EMAIL = env.str('DJANGO_SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
@@ -366,7 +366,7 @@ else:
 BRAND = {
     'BRAND_NAME': 'Privacy Compliance',
     'BRAND_TAGLINE': 'Continuous Data Protection Compliance',
-    'PRIMARY_DOMAIN': 'mydataprotection.cocoatool.org',
+    'PRIMARY_DOMAIN': 'mydatacompliance.domainname',
     'SUPPORT_EMAIL': 'privacy@cocoatool.org',
     'PRIVATE_BETA': env('APP_PRIVATE_BETA'),
     'BILLING_ENABLED': env('APP_ENABLE_BILLING'),

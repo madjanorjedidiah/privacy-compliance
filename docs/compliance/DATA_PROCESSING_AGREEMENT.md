@@ -44,7 +44,7 @@ the Customer — in the GDPR, NDPA 2023, Kenya DPA 2019, or CCPA/CPRA.
   Customer's data subjects that the Customer uploads to, or instructs the
   Processor to process through, the Service.
 - **"Service"** — the Privacy Compliance Platform provided by the
-  Processor at **[https://mydataprotection.cocoatool.org]**.
+  Processor at **[https://mydatacompliance.domainname]**.
 - **"Sub-processor"** — any third party the Processor engages to process
   Personal Data on behalf of the Customer.
 
@@ -233,7 +233,7 @@ Date:
 | **[EMAIL PROVIDER]** | Transactional email | **[LOCATION]** | **[Date]** |
 | **[CDN]** | Static asset delivery | **[LOCATION]** | **[Date]** |
 
-Updated list published at **[https://mydataprotection.cocoatool.org/sub-processors/]** when available.
+Updated list published at **[https://mydatacompliance.domainname/sub-processors/]** when available.
 
 ## Annex D — Standard Contractual Clauses (if applicable)
 

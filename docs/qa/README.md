@@ -29,7 +29,7 @@ automated, scripted, and human.
 ./scripts/verify.sh
 
 # Same but probing a live instance
-./scripts/verify.sh https://mydataprotection.cocoatool.org
+./scripts/verify.sh https://mydatacompliance.domainname
 
 # Manual scripts — work through the markdown, tick boxes as you go,
 # and save the completed doc under docs/qa/runs/YYYY-QN/.

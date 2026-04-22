@@ -1,6 +1,6 @@
 # Pre-Deploy Checklist
 
-Run this every time before promoting a build to `mydataprotection.cocoatool.org`.
+Run this every time before promoting a build to `mydatacompliance.domainname`.
 The goal is to stop anything that will blow up production — nothing more, nothing less.
 
 > Fastest path: `./scripts/verify.sh https://staging.cocoatool.org` captures
@@ -77,7 +77,7 @@ docker compose up -d privacy_django privacy_celery privacy_beat privacy_nginx
 docker compose exec privacy_django python manage.py migrate --noinput
 docker compose exec privacy_django python manage.py setup_periodic_tasks
 docker compose exec privacy_django python manage.py check --deploy
-curl -fsS https://mydataprotection.cocoatool.org/ops/health/
+curl -fsS https://mydatacompliance.domainname/ops/health/
 ```
 
 If the `curl` returns a non-200, roll back:

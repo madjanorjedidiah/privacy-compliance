@@ -67,7 +67,7 @@ Visit http://127.0.0.1:8000/ — sign up, walk the onboarding wizard, and land o
 
 ## Deploy — shared infra (Nginx Proxy Manager + Postgres + Redis)
 
-The production stack at `mydataprotection.cocoatool.org` **does not run its
+The production stack at `mydatacompliance.domainname` **does not run its
 own Postgres/Redis/NPM**. Instead it joins the host's existing
 `nginx_proxy_manager_default` docker network and talks to:
 
@@ -90,7 +90,7 @@ Deploy steps:
 cp .env.example .env               # fill in APP_SECRET_KEY + POSTGRES_PASSWORD
 docker compose build
 docker compose up -d
-# Point an NPM proxy host from mydataprotection.cocoatool.org → privacy_nginx:80
+# Point an NPM proxy host from mydatacompliance.domainname → privacy_nginx:80
 ```
 
 The `privacy_django` command handles migrations, idempotent seeds, static

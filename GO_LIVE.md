@@ -33,8 +33,8 @@ Environment variables (populate a `.env` from `.env.example`):
 - [ ] `DJANGO_DEBUG=0` on the container.
 - [ ] `APP_SECRET_KEY` — 64-byte random, unique to prod.
   Generate: `python -c "import secrets; print(secrets.token_urlsafe(64))"`
-- [ ] `DJANGO_ALLOWED_HOSTS=mydataprotection.cocoatool.org,privacy_django,privacy_nginx`
-- [ ] `DJANGO_CSRF_TRUSTED_ORIGINS=https://mydataprotection.cocoatool.org`
+- [ ] `DJANGO_ALLOWED_HOSTS=mydatacompliance.domainname,privacy_django,privacy_nginx`
+- [ ] `DJANGO_CSRF_TRUSTED_ORIGINS=https://mydatacompliance.domainname`
 - [ ] `DATABASE_URL` or `DB_*` — points at shared Postgres via `pgbouncer:6432`.
   Dedicated database `privacy_db` + dedicated role with only the rights it needs.
 - [ ] `REDIS_URL=redis://redis:6379/4` — rate-limit counters live here.
@@ -69,7 +69,7 @@ docker compose exec privacy_django python manage.py createsuperuser
 
 ## 4. Security verification
 
-- [ ] `curl -I https://mydataprotection.cocoatool.org` returns
+- [ ] `curl -I https://mydatacompliance.domainname` returns
   `Strict-Transport-Security`, `Content-Security-Policy`, and
   `X-Frame-Options: DENY`.
 - [ ] Failed-login flood test — `django-axes` locks the account at 5 attempts.

@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════════
-# Privacy Compliance Platform (mydataprotection.cocoatool.org)
+# Privacy Compliance Platform (mydatacompliance.domainname)
 # ═══════════════════════════════════════════════════════════════════════════
 # Connects to EXISTING shared server infrastructure:
 #   - PostgreSQL (postgis_db) via PgBouncer (pgbouncer:6432)
@@ -32,8 +32,8 @@ services:
       DJANGO_DEBUG: "0"
       DJANGO_SETTINGS_MODULE: privacy_compliance.settings
       APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-mydataprotection.cocoatool.org,privacy_django,privacy_nginx}
-      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://mydataprotection.cocoatool.org}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-mydatacompliance.domainname,privacy_django,privacy_nginx}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://mydatacompliance.domainname}
       # DB via shared PgBouncer (connection pooling on the host)
       DB_ENGINE: django.db.backends.postgresql
       DB_NAME: ${POSTGRES_DB:-privacy_db}

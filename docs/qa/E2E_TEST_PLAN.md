@@ -1,7 +1,7 @@
 # End-to-End Test Plan — Privacy Compliance Platform
 
 This is the master test plan for the Privacy Compliance Platform hosted at
-`mydataprotection.cocoatool.org`. It is organised by layer — **Infrastructure**,
+`mydatacompliance.domainname`. It is organised by layer — **Infrastructure**,
 **Business logic**, **Management** — and every section lists explicit
 acceptance criteria so a reviewer can tick each one off.
 
@@ -44,8 +44,8 @@ acceptance criteria so a reviewer can tick each one off.
 
 | # | Check | How | ✓ |
 |---|---|---|---|
-| 1.3.1 | HSTS 1-year header present | 🔧 `curl -sI https://mydataprotection.cocoatool.org/ \| grep -i strict-transport` | |
-| 1.3.2 | CSP header present with `default-src 'self'`, `frame-ancestors 'none'` | 🔧 `curl -sI https://mydataprotection.cocoatool.org/accounts/login/ \| grep -i content-security-policy` | |
+| 1.3.1 | HSTS 1-year header present | 🔧 `curl -sI https://mydatacompliance.domainname/ \| grep -i strict-transport` | |
+| 1.3.2 | CSP header present with `default-src 'self'`, `frame-ancestors 'none'` | 🔧 `curl -sI https://mydatacompliance.domainname/accounts/login/ \| grep -i content-security-policy` | |
 | 1.3.3 | `X-Frame-Options: DENY` | 🔧 same curl | |
 | 1.3.4 | `X-Content-Type-Options: nosniff` | 🔧 same curl | |
 | 1.3.5 | `Referrer-Policy: same-origin` | 🔧 same curl | |
@@ -227,7 +227,7 @@ results into the compliance register.
 
 ```bash
 # Full automated suite
-./scripts/verify.sh                     # or ./scripts/verify.sh https://mydataprotection.cocoatool.org
+./scripts/verify.sh                     # or ./scripts/verify.sh https://mydatacompliance.domainname
 
 # Django-only tests
 docker compose exec privacy_django python manage.py test
@@ -236,8 +236,8 @@ docker compose exec privacy_django python manage.py test
 docker compose exec privacy_django python manage.py check --deploy
 
 # One-shot live smoke
-curl -fsS https://mydataprotection.cocoatool.org/ops/health/
-curl -fsS https://mydataprotection.cocoatool.org/ops/readyz/
+curl -fsS https://mydatacompliance.domainname/ops/health/
+curl -fsS https://mydatacompliance.domainname/ops/readyz/
 
 # Container status
 docker compose ps && docker compose logs --since 1h --tail 50
