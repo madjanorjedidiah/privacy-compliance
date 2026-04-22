@@ -1,59 +1,118 @@
 # ═══════════════════════════════════════════════════════════════════════════
-# Privacy Compliance Platform (mydatacompliance.domainname)
+# Privacy Compliance Platform — STANDALONE deployment
 # ═══════════════════════════════════════════════════════════════════════════
-# Connects to EXISTING shared server infrastructure:
-#   - PostgreSQL (postgis_db) via PgBouncer (pgbouncer:6432)
-#   - Redis (redis:6379)
-#   - Nginx Proxy Manager (handles SSL + public reverse proxy)
+# This is the default compose file. It brings up everything the platform
+# needs, with zero external infrastructure required:
 #
-# All services join the external 'nginx_proxy_manager_default' network so
-# they can reach the shared DB, Redis, and be proxied by NPM.
+#   db       — Postgres 16 (own volume)
+#   redis    — Redis 7 (own volume, AOF enabled)
+#   web      — Django + gunicorn
+#   celery   — background worker
+#   beat     — periodic-task scheduler (DB-backed via django_celery_beat)
+#   nginx    — TLS terminator + static/media + reverse proxy
+#
+# First-time run:
+#
+#   ./scripts/quickstart.sh          # writes .env, self-signed cert, then `up -d`
+#
+# Or manually:
+#
+#   cp .env.example .env && edit .env
+#   ./scripts/init-standalone.sh     # generates a self-signed TLS cert
+#   docker compose up -d
+#
+# For production Let's Encrypt TLS — follow the "Let's Encrypt" section of
+# README.md (uses the certbot profile at the bottom of this file).
+#
+# For the shared-infra variant (external Postgres / Redis / NPM) — use
+# `docker compose -f docker-compose.shared.yml up -d` instead.
 # ═══════════════════════════════════════════════════════════════════════════
 
+x-django-env: &django_env
+  DJANGO_DEBUG: "0"
+  DJANGO_SETTINGS_MODULE: privacy_compliance.settings
+  APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
+  DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,privacy_django,privacy_nginx}
+  DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://localhost}
+  DB_ENGINE: django.db.backends.postgresql
+  DB_NAME: ${POSTGRES_DB:-privacy_db}
+  DB_USER: ${POSTGRES_USER:-postgres}
+  DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+  DB_HOST: db
+  DB_PORT: "5432"
+  REDIS_URL: redis://redis:6379/4
+  CELERY_BROKER_URL: redis://redis:6379/5
+  CELERY_RESULT_BACKEND: redis://redis:6379/5
+  APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+  APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
+  APP_ENABLE_HTTPS: ${APP_ENABLE_HTTPS:-0}   # nginx in this stack terminates TLS
+  APP_PRIVATE_BETA: ${APP_PRIVATE_BETA:-1}
+
 services:
+
   # ─────────────────────────────────────────────────────────────────────────
-  # Django web + gunicorn (dashboard, compliance workspace, DPO registers)
+  # PostgreSQL (Data Controller's database — never exposed to the host)
   # ─────────────────────────────────────────────────────────────────────────
-  privacy_django:
+  db:
+    image: postgres:16-alpine
+    container_name: privacy_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-privacy_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-privacy_db}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Redis (cache + Celery broker — never exposed to the host)
+  # ─────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: privacy_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1000"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Django web + gunicorn
+  # ─────────────────────────────────────────────────────────────────────────
+  web:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: privacy_django
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     expose:
       - "8000"
-    volumes:
-      - privacy_media:/app/media
-      - privacy_static:/app/staticfiles
     env_file:
       - path: .env
         required: false
     environment:
-      DJANGO_DEBUG: "0"
-      DJANGO_SETTINGS_MODULE: privacy_compliance.settings
-      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-mydatacompliance.domainname,privacy_django,privacy_nginx}
-      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://mydatacompliance.domainname}
-      # DB via shared PgBouncer (connection pooling on the host)
-      DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: ${POSTGRES_DB:-privacy_db}
-      DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
-      DB_HOST: ${DB_HOST:-pgbouncer}
-      DB_PORT: ${DB_PORT:-6432}
-      # Redis (shared server instance). DB 4 = cache, 5 = celery broker/results.
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
-      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
-      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
-      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
-      APP_ENABLE_HTTPS: ${APP_ENABLE_HTTPS:-0}  # NPM terminates TLS upstream
+      <<: *django_env
       DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME:-}
       DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL:-}
       DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD:-}
-      BOOTSTRAP: "1"   # this container runs migrations + seeds + periodic-task setup
-    networks:
-      - nginx_proxy_manager_default
+      BOOTSTRAP: "1"    # this container runs migrations + seeds + periodic-task setup
+    volumes:
+      - mediafiles:/app/media
+      - staticfiles:/app/staticfiles
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/ops/health/')\""]
       interval: 30s
@@ -75,35 +134,20 @@ services:
   # ─────────────────────────────────────────────────────────────────────────
   # Celery worker — DPA expiry alerts, DSAR SLA warnings, training reminders
   # ─────────────────────────────────────────────────────────────────────────
-  privacy_celery:
+  celery:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: privacy_celery
     restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_started
     env_file:
       - path: .env
         required: false
     environment:
-      DJANGO_DEBUG: "0"
-      DJANGO_SETTINGS_MODULE: privacy_compliance.settings
-      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
-      DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: ${POSTGRES_DB:-privacy_db}
-      DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
-      DB_HOST: ${DB_HOST:-pgbouncer}
-      DB_PORT: ${DB_PORT:-6432}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
-      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
-      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
-      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
-    networks:
-      - nginx_proxy_manager_default
-    depends_on:
-      privacy_django:
-        condition: service_started
+      <<: *django_env
     command: >
       celery -A privacy_compliance worker
       --loglevel=info
@@ -116,70 +160,94 @@ services:
   # ─────────────────────────────────────────────────────────────────────────
   # Celery Beat — nightly scheduler (expiry checks, review-due reminders)
   # ─────────────────────────────────────────────────────────────────────────
-  privacy_beat:
+  beat:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: privacy_beat
     restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_started
     env_file:
       - path: .env
         required: false
     environment:
-      DJANGO_DEBUG: "0"
-      DJANGO_SETTINGS_MODULE: privacy_compliance.settings
-      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
-      DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: ${POSTGRES_DB:-privacy_db}
-      DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
-      DB_HOST: ${DB_HOST:-pgbouncer}
-      DB_PORT: ${DB_PORT:-6432}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
-      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
-      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
-      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
-    networks:
-      - nginx_proxy_manager_default
-    depends_on:
-      privacy_django:
-        condition: service_started
+      <<: *django_env
     command: >
       celery -A privacy_compliance beat
       --loglevel=info
       --scheduler django_celery_beat.schedulers:DatabaseScheduler
 
   # ─────────────────────────────────────────────────────────────────────────
-  # Internal nginx — static/media + upstream routing.
-  # Nginx Proxy Manager forwards public traffic here on the Docker network.
+  # Internal nginx — TLS terminator + static/media + upstream routing
+  # Mounts deploy/certs for the TLS cert; scripts/init-standalone.sh drops
+  # a self-signed cert there on first boot if none exists.
   # ─────────────────────────────────────────────────────────────────────────
-  privacy_nginx:
+  nginx:
     image: nginx:alpine
     container_name: privacy_nginx
     restart: unless-stopped
-    expose:
-      - "80"
+    depends_on:
+      - web
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - privacy_static:/static:ro
-      - privacy_media:/media:ro
-    networks:
-      - nginx_proxy_manager_default
-    depends_on:
-      - privacy_django
+      - ./deploy/certs:/etc/nginx/certs:ro
+      - staticfiles:/srv/privacy/staticfiles:ro
+      - mediafiles:/srv/privacy/media:ro
+      - certbot_www:/var/www/certbot:ro
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/healthz || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
 
-volumes:
-  privacy_media:
-    name: privacy_media
-  privacy_static:
-    name: privacy_static
+  # ─────────────────────────────────────────────────────────────────────────
+  # Certbot — optional, opt-in via the `letsencrypt` profile:
+  #   docker compose --profile letsencrypt up -d
+  # Obtains + auto-renews a Let's Encrypt cert against the nginx webroot.
+  # Only run once your DNS points at the host and ports 80/443 are open.
+  # ─────────────────────────────────────────────────────────────────────────
+  certbot:
+    image: certbot/certbot:latest
+    container_name: privacy_certbot
+    profiles: ["letsencrypt"]
+    depends_on:
+      - nginx
+    volumes:
+      - ./deploy/certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    environment:
+      CERTBOT_DOMAIN: ${CERTBOT_DOMAIN:-}
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL:-}
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -e
+        if [ -z "$$CERTBOT_DOMAIN" ] || [ -z "$$CERTBOT_EMAIL" ]; then
+          echo "CERTBOT_DOMAIN and CERTBOT_EMAIL must be set in .env before running --profile letsencrypt"
+          exit 1
+        fi
+        certbot certonly --webroot -w /var/www/certbot \
+          --non-interactive --agree-tos \
+          --email "$$CERTBOT_EMAIL" -d "$$CERTBOT_DOMAIN" || true
+        while true; do
+          certbot renew --webroot -w /var/www/certbot
+          sleep 43200  # 12h
+        done
 
-networks:
-  nginx_proxy_manager_default:
-    external: true
+volumes:
+  pgdata:
+    name: privacy_pgdata
+  redisdata:
+    name: privacy_redisdata
+  mediafiles:
+    name: privacy_media
+  staticfiles:
+    name: privacy_static
+  certbot_www:
+    name: privacy_certbot_www

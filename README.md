@@ -65,36 +65,71 @@ python3.13 -m venv .venv
 
 Visit http://127.0.0.1:8000/ — sign up, walk the onboarding wizard, and land on the Command Center.
 
-## Deploy — shared infra (Nginx Proxy Manager + Postgres + Redis)
+## Deploy — standalone (the easy path)
 
-The production stack at `mydatacompliance.domainname` **does not run its
-own Postgres/Redis/NPM**. Instead it joins the host's existing
-`nginx_proxy_manager_default` docker network and talks to:
+A single command brings up everything the platform needs — its own
+Postgres, Redis, Django + gunicorn, Celery worker, Celery Beat, and
+nginx with TLS termination:
 
-- `pgbouncer:6432` → shared Postgres (create the `privacy_db` database + role)
-- `redis:6379` → shared Redis (use DB indexes 4 for cache, 5 for celery)
-- Nginx Proxy Manager → terminates TLS, forwards to `privacy_nginx:80`
+```bash
+./scripts/quickstart.sh mydomain.example.com
+# or just: ./scripts/quickstart.sh   (uses localhost)
+```
 
-Services launched by `docker-compose.yml`:
+That script:
+
+1. copies `.env.example` → `.env` and generates a strong `APP_SECRET_KEY`
+   + `POSTGRES_PASSWORD` for you;
+2. drops a self-signed TLS cert into `deploy/certs/`;
+3. runs `docker compose up -d --build`.
+
+Once the `web` container is healthy (~30s, while it runs migrations,
+seeds jurisdictions + templates, and schedules periodic tasks), visit:
+
+- `https://localhost/` (accept the self-signed cert warning)
+- `https://localhost/admin/`
+- `https://localhost/ops/health/`
+
+Services launched:
 
 | Service | Purpose |
 |---|---|
-| `privacy_django` | gunicorn serving the Django app |
-| `privacy_celery` | Celery worker (DPA expiry sweeps, training reminders, ad-hoc jobs) |
-| `privacy_beat` | Celery Beat scheduler (DB-backed via `django_celery_beat`) |
-| `privacy_nginx` | Internal nginx — static/media + upstream routing, behind NPM |
+| `db` | Postgres 16 (own volume) |
+| `redis` | Redis 7 (own volume, AOF) |
+| `web` | Django + gunicorn |
+| `celery` | Background worker |
+| `beat` | Periodic-task scheduler |
+| `nginx` | TLS terminator + static / media + reverse proxy |
 
-Deploy steps:
+### Production TLS — Let's Encrypt
+
+Once DNS points at the host and ports 80 / 443 are open:
 
 ```bash
-cp .env.example .env               # fill in APP_SECRET_KEY + POSTGRES_PASSWORD
-docker compose build
-docker compose up -d
-# Point an NPM proxy host from mydatacompliance.domainname → privacy_nginx:80
+# In .env
+CERTBOT_DOMAIN=mydatacompliance.example.com
+CERTBOT_EMAIL=ops@privacy.domain
+
+# Obtain + auto-renew
+docker compose --profile letsencrypt up -d certbot
+docker compose restart nginx
 ```
 
-The `privacy_django` command handles migrations, idempotent seeds, static
-collection, and (optionally) superuser provisioning on startup.
+Certbot runs forever in the background, renewing every 12h through the
+nginx `/.well-known/acme-challenge/` webroot.
+
+### Deploy — shared infra (advanced)
+
+If you already run shared Postgres / Redis / Nginx Proxy Manager on the
+host, use the alternative compose instead:
+
+```bash
+docker compose -f docker-compose.shared.yml up -d
+```
+
+See the docstring at the top of
+[`docker-compose.shared.yml`](docker-compose.shared.yml) for the network
+and service names it expects.
 
 ## Testing
 

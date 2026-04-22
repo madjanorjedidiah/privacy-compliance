@@ -28,9 +28,15 @@ staticfiles/
 /tmp/privacy_*
 privacy_*.txt
 
-# Local overrides
+# Local overrides (but DO track .env.example as the canonical template)
 .env
-.env.*
+.env.local
+.env.*.local
+!.env.example
+
+# TLS material (self-signed is generated at first boot; LE cert is issued in-container)
+deploy/certs/*.pem
+deploy/certs/live/
 
 # Claude / gstack work artifacts
 .gstack/qa-reports/screenshots/

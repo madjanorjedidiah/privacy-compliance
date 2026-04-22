@@ -1,0 +1,194 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Privacy Compliance Platform — SHARED-INFRA variant (optional)
+# ═══════════════════════════════════════════════════════════════════════════
+# Use this compose file when you already have shared Postgres / Redis /
+# Nginx Proxy Manager on the host (e.g. one server hosting multiple apps
+# behind a common NPM gateway):
+#
+#   docker compose -f docker-compose.shared.yml up -d
+#
+# It connects to the EXISTING:
+#   - PostgreSQL (postgis_db) via PgBouncer (pgbouncer:6432)
+#   - Redis (redis:6379)
+#   - Nginx Proxy Manager (handles SSL + public reverse proxy)
+#
+# All services join the external 'nginx_proxy_manager_default' network
+# so they can reach the shared DB, Redis, and be proxied by NPM.
+#
+# For a self-contained standalone deployment with its own Postgres / Redis /
+# Nginx, use the default `docker-compose.yml` instead.
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Django web + gunicorn (dashboard, compliance workspace, DPO registers)
+  # ─────────────────────────────────────────────────────────────────────────
+  privacy_django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: privacy_django
+    restart: unless-stopped
+    expose:
+      - "8000"
+    volumes:
+      - privacy_media:/app/media
+      - privacy_static:/app/staticfiles
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DJANGO_DEBUG: "0"
+      DJANGO_SETTINGS_MODULE: privacy_compliance.settings
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-mydatacompliance.domainname,privacy_django,privacy_nginx}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://mydatacompliance.domainname}
+      # DB via shared PgBouncer (connection pooling on the host)
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${POSTGRES_DB:-privacy_db}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      DB_HOST: ${DB_HOST:-pgbouncer}
+      DB_PORT: ${DB_PORT:-6432}
+      # Redis (shared server instance). DB 4 = cache, 5 = celery broker/results.
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
+      APP_ENABLE_HTTPS: ${APP_ENABLE_HTTPS:-0}  # NPM terminates TLS upstream
+      DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME:-}
+      DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL:-}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD:-}
+      BOOTSTRAP: "1"   # this container runs migrations + seeds + periodic-task setup
+    networks:
+      - nginx_proxy_manager_default
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/ops/health/')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command:
+      - gunicorn
+      - privacy_compliance.wsgi:application
+      - --bind=0.0.0.0:8000
+      - --workers=3
+      - --threads=2
+      - --timeout=120
+      - --max-requests=1000
+      - --max-requests-jitter=50
+      - --access-logfile=-
+      - --error-logfile=-
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Celery worker — DPA expiry alerts, DSAR SLA warnings, training reminders
+  # ─────────────────────────────────────────────────────────────────────────
+  privacy_celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: privacy_celery
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DJANGO_DEBUG: "0"
+      DJANGO_SETTINGS_MODULE: privacy_compliance.settings
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${POSTGRES_DB:-privacy_db}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      DB_HOST: ${DB_HOST:-pgbouncer}
+      DB_PORT: ${DB_PORT:-6432}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
+    networks:
+      - nginx_proxy_manager_default
+    depends_on:
+      privacy_django:
+        condition: service_started
+    command: >
+      celery -A privacy_compliance worker
+      --loglevel=info
+      --concurrency=2
+      --max-tasks-per-child=100
+      --without-heartbeat
+      --without-gossip
+      --without-mingle
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Celery Beat — nightly scheduler (expiry checks, review-due reminders)
+  # ─────────────────────────────────────────────────────────────────────────
+  privacy_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: privacy_beat
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DJANGO_DEBUG: "0"
+      DJANGO_SETTINGS_MODULE: privacy_compliance.settings
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY must be set in .env}
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${POSTGRES_DB:-privacy_db}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      DB_HOST: ${DB_HOST:-pgbouncer}
+      DB_PORT: ${DB_PORT:-6432}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/4}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/5}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/5}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      APP_LOG_FORMAT: ${APP_LOG_FORMAT:-json}
+    networks:
+      - nginx_proxy_manager_default
+    depends_on:
+      privacy_django:
+        condition: service_started
+    command: >
+      celery -A privacy_compliance beat
+      --loglevel=info
+      --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Internal nginx — static/media + upstream routing.
+  # Nginx Proxy Manager forwards public traffic here on the Docker network.
+  # ─────────────────────────────────────────────────────────────────────────
+  privacy_nginx:
+    image: nginx:alpine
+    container_name: privacy_nginx
+    restart: unless-stopped
+    expose:
+      - "80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - privacy_static:/static:ro
+      - privacy_media:/media:ro
+    networks:
+      - nginx_proxy_manager_default
+    depends_on:
+      - privacy_django
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  privacy_media:
+    name: privacy_media
+  privacy_static:
+    name: privacy_static
+
+networks:
+  nginx_proxy_manager_default:
+    external: true
